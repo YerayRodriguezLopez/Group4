@@ -6,8 +6,6 @@ namespace Group4API.Model
 {
     public class User : IdentityUser
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public List<Rates> Rates { get; set; } = new List<Rates>();
     }
 }

@@ -9,7 +9,9 @@ namespace Group4API.Model
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Location { get; set; }
-        public string Coords { get; set; }
+        public float Lat { get; set; }
+        public float Lng { get; set; }
+        public int CompanyId { get; set; }
         public Company Company { get; set; }
     }
 }

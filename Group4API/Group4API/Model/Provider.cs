@@ -2,7 +2,7 @@
 {
     public class Provider
     {
-        public Company _Provider { get; set; }
-        public Company Address { get; set; }
+        public int Id { get; set; }
+        public List<Company> Companies { get; set; } = new List<Company>();
     }
 }
