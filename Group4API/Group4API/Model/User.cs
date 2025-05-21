@@ -6,6 +6,6 @@ namespace Group4API.Model
 {
     public class User : IdentityUser
     {
-        public List<Rates> Rates { get; set; } = new List<Rates>();
+        public List<Rate> Rates { get; set; } = new List<Rate>();
     }
 }

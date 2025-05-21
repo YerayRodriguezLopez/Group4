@@ -33,18 +33,6 @@ namespace Group4API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Provider",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Provider", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -92,27 +80,27 @@ namespace Group4API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CompanyProvider",
+                name: "CompanyProviders",
                 columns: table => new
                 {
-                    CompaniesId = table.Column<int>(type: "int", nullable: false),
-                    ProvidersId = table.Column<int>(type: "int", nullable: false)
+                    ProviderId = table.Column<int>(type: "int", nullable: false),
+                    CompanyId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CompanyProvider", x => new { x.CompaniesId, x.ProvidersId });
+                    table.PrimaryKey("PK_CompanyProviders", x => new { x.ProviderId, x.CompanyId });
                     table.ForeignKey(
-                        name: "FK_CompanyProvider_Companies_CompaniesId",
-                        column: x => x.CompaniesId,
+                        name: "FK_CompanyProviders_Companies_CompanyId",
+                        column: x => x.CompanyId,
                         principalTable: "Companies",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_CompanyProvider_Provider_ProvidersId",
-                        column: x => x.ProvidersId,
-                        principalTable: "Provider",
+                        name: "FK_CompanyProviders_Companies_ProviderId",
+                        column: x => x.ProviderId,
+                        principalTable: "Companies",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -149,9 +137,9 @@ namespace Group4API.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CompanyProvider_ProvidersId",
-                table: "CompanyProvider",
-                column: "ProvidersId");
+                name: "IX_CompanyProviders_CompanyId",
+                table: "CompanyProviders",
+                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Rates_CompanyId",
@@ -171,13 +159,10 @@ namespace Group4API.Migrations
                 name: "Addresses");
 
             migrationBuilder.DropTable(
-                name: "CompanyProvider");
+                name: "CompanyProviders");
 
             migrationBuilder.DropTable(
                 name: "Rates");
-
-            migrationBuilder.DropTable(
-                name: "Provider");
 
             migrationBuilder.DropTable(
                 name: "Companies");

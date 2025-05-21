@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Group4API.Model
 {
-    public class Rates
+    public class Rate
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -22,21 +22,6 @@ namespace Group4API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("CompanyProvider", b =>
-                {
-                    b.Property<int>("CompaniesId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProvidersId")
-                        .HasColumnType("int");
-
-                    b.HasKey("CompaniesId", "ProvidersId");
-
-                    b.HasIndex("ProvidersId");
-
-                    b.ToTable("CompanyProvider");
-                });
-
             modelBuilder.Entity("Group4API.Model.Address", b =>
                 {
                     b.Property<int>("Id")
@@ -110,20 +95,22 @@ namespace Group4API.Migrations
                     b.ToTable("Companies");
                 });
 
-            modelBuilder.Entity("Group4API.Model.Provider", b =>
+            modelBuilder.Entity("Group4API.Model.CompanyProvider", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("ProviderId")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("ProviderId", "CompanyId");
 
-                    b.ToTable("Provider");
+                    b.HasIndex("CompanyId");
+
+                    b.ToTable("CompanyProviders");
                 });
 
-            modelBuilder.Entity("Group4API.Model.Rates", b =>
+            modelBuilder.Entity("Group4API.Model.Rate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -202,21 +189,6 @@ namespace Group4API.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("CompanyProvider", b =>
-                {
-                    b.HasOne("Group4API.Model.Company", null)
-                        .WithMany()
-                        .HasForeignKey("CompaniesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Group4API.Model.Provider", null)
-                        .WithMany()
-                        .HasForeignKey("ProvidersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Group4API.Model.Address", b =>
                 {
                     b.HasOne("Group4API.Model.Company", "Company")
@@ -228,7 +200,26 @@ namespace Group4API.Migrations
                     b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("Group4API.Model.Rates", b =>
+            modelBuilder.Entity("Group4API.Model.CompanyProvider", b =>
+                {
+                    b.HasOne("Group4API.Model.Company", "Company")
+                        .WithMany("CompanyProviders")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Group4API.Model.Company", "Provider")
+                        .WithMany("ProvidedCompanies")
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Provider");
+                });
+
+            modelBuilder.Entity("Group4API.Model.Rate", b =>
                 {
                     b.HasOne("Group4API.Model.Company", "Company")
                         .WithMany("Rates")
@@ -251,6 +242,10 @@ namespace Group4API.Migrations
                 {
                     b.Navigation("Address")
                         .IsRequired();
+
+                    b.Navigation("CompanyProviders");
+
+                    b.Navigation("ProvidedCompanies");
 
                     b.Navigation("Rates");
                 });
