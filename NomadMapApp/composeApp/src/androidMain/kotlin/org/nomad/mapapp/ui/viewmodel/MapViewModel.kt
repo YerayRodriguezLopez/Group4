@@ -64,7 +64,7 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
             _companies.value
         } else {
             _companies.value.filter { company ->
-                company.tags.any { it in _selectedTags.value }
+                company.getTagsList().any { tag -> tag in _selectedTags.value }
             }
         }
     }

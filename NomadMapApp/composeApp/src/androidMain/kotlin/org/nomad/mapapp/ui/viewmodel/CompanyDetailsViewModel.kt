@@ -30,7 +30,7 @@ class CompanyDetailsViewModel(
 
         viewModelScope.launch {
             _ratingState.value = RatingState.Loading
-            val success = companyRepository.rateCompany(company.id, score, user.id)
+            val success = companyRepository.rateCompany(company.id.toString(), score, user.id)
             _ratingState.value = if (success) {
                 RatingState.Success
             } else {

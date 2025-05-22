@@ -75,7 +75,10 @@ fun CompanyListScreen(
                             headlineContent = { Text(company.name) },
                             supportingContent = {
                                 Column {
-                                    Text(company.address.location)
+                                    company.address?.let { address ->
+                                        Text(address.location)
+                                    } ?: Text(stringResource(R.string.address_unavailable))
+
                                     Text(
                                         stringResource(
                                             when {

@@ -4,26 +4,21 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Company(
-    val id: String,
+    val id: Int = 0,
     val nif: String,
     val name: String,
-    val address: Address,
     val mail: String,
-    val phone: String,
-    val tags: List<String>,
+    val phone: Int,
+    val tags: String,
     val score: Float,
     val isProvider: Boolean,
-    val isRetail: Boolean
-)
+    val isRetail: Boolean,
+    val addressId: Int = 0,
+    val address: Address? = null
+) {
+    // Parse phone number to string when needed
+    fun getPhoneAsString(): String = phone.toString()
 
-@Serializable
-data class Address(
-    val location: String,
-    val coordinates: Coordinates
-)
-
-@Serializable
-data class Coordinates(
-    val latitude: Double,
-    val longitude: Double
-)
+    // Parse tags CSV to list
+    fun getTagsList(): List<String> = tags.split(",").map { it.trim() }
+}

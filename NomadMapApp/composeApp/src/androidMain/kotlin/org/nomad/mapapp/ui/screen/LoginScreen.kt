@@ -60,7 +60,7 @@ fun LoginScreen(
                         if (currentUser != null) {
                             // User is logged in
                             Text(
-                                text = stringResource(R.string.welcome_user, currentUser!!.userName),
+                                text = stringResource(R.string.welcome_user, currentUser!!.email ?: ""),
                                 style = MaterialTheme.typography.headlineSmall
                             )
 
@@ -80,7 +80,7 @@ fun LoginScreen(
                             OutlinedTextField(
                                 value = email,
                                 onValueChange = { email = it },
-                                label = { Text(stringResource(R.string.email_label)) },
+                                label = { Text(stringResource(R.string.email)) },
                                 modifier = Modifier.fillMaxWidth()
                             )
 
@@ -112,6 +112,13 @@ fun LoginScreen(
                                         loginState !is LoginViewModel.LoginState.Loading
                             ) {
                                 Text(stringResource(R.string.login))
+                            }
+
+                            TextButton(
+                                onClick = { navController.navigate(Screen.Register.route) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(stringResource(R.string.create_account))
                             }
                         }
                     }

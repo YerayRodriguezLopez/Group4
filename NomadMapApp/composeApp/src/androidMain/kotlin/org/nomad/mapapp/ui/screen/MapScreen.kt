@@ -37,14 +37,11 @@ import org.nomad.mapapp.ui.viewmodel.MapViewModel
 
 class CompanyClusterItem(
     val company: Company,
-    private val position: LatLng = LatLng(
-        company.address.coordinates.latitude,
-        company.address.coordinates.longitude
-    )
+    private val position: LatLng = company.address?.toLatLng() ?: LatLng(0.0, 0.0)
 ) : ClusterItem {
     override fun getPosition(): LatLng = position
     override fun getTitle(): String = company.name
-    override fun getSnippet(): String = company.address.location
+    override fun getSnippet(): String = company.address?.location ?: ""
     override fun getZIndex(): Float = 0f
 }
 
@@ -164,16 +161,13 @@ fun MapScreen(
                         items(searchResults) { company ->
                             ListItem(
                                 headlineContent = { Text(company.name) },
-                                supportingContent = { Text(company.address.location) },
+                                supportingContent = { Text(company.address?.location ?: stringResource(R.string.address_unavailable)) },
                                 modifier = Modifier.clickable {
                                     // Navigate to company details
                                     scope.launch {
                                         cameraPositionState.animate(
                                             update = CameraUpdateFactory.newLatLngZoom(
-                                                LatLng(
-                                                    company.address.coordinates.latitude,
-                                                    company.address.coordinates.longitude
-                                                ),
+                                                company.address?.toLatLng() ?: LatLng(0.0, 0.0),
                                                 15f
                                             )
                                         )
@@ -182,7 +176,7 @@ fun MapScreen(
                                     searchText = ""
                                 }
                             )
-                            Divider()
+                            HorizontalDivider()
                         }
                     }
                 }
@@ -217,7 +211,11 @@ fun MapScreen(
                         }
                     ) {
                         val filteredCompanies = viewModel.getFilteredCompanies()
-                        val clusterItems = filteredCompanies.map { CompanyClusterItem(it) }
+                        val clusterItems = filteredCompanies.mapNotNull { company ->
+                            company.address?.let { address ->
+                                CompanyClusterItem(company)
+                            }
+                        }
 
                         Clustering(
                             items = clusterItems,
@@ -226,8 +224,20 @@ fun MapScreen(
                                 true // consume the event
                             },
                             onClusterItemClick = { clusterItem ->
+                                // This is where your animation code should go
+                                scope.launch {
+                                    clusterItem.company.address?.let { address ->
+                                        cameraPositionState.animate(
+                                            update = CameraUpdateFactory.newLatLngZoom(
+                                                address.toLatLng(),
+                                                15f
+                                            )
+                                        )
+                                    }
+                                }
+
                                 // Navigate to company details
-                                navController.navigate(Screen.CompanyDetails.createRoute(clusterItem.company.id))
+                                navController.navigate(Screen.CompanyDetails.createRoute(clusterItem.company.id.toString()))
                                 true // consume the event
                             },
                             clusterItemContent = { clusterItem ->
@@ -248,7 +258,7 @@ fun MapScreen(
                                 MarkerInfoWindow(
                                     state = rememberMarkerState(position = clusterItem.position),
                                     title = company.name,
-                                    snippet = company.address.location,
+                                    snippet = company.address?.location ?: stringResource(R.string.address_unavailable),
                                     icon = BitmapDescriptorFactory.defaultMarker(markerColor)
                                 )
                             }

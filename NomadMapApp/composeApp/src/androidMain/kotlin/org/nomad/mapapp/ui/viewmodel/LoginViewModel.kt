@@ -13,6 +13,9 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Initial)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
+    private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Initial)
+    val registerState: StateFlow<RegisterState> = _registerState.asStateFlow()
+
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
@@ -27,9 +30,29 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
-            val success = repository.login(email, password)
-            _loginState.value = if (success) LoginState.Success else LoginState.Error("Error d'autenticació")
+            val response = repository.login(email, password)
+            _loginState.value = if (response.success) {
+                LoginState.Success
+            } else {
+                LoginState.Error(response.message ?: "Error d'autenticació")
+            }
         }
+    }
+
+    fun register(email: String, password: String, confirmPassword: String) {
+        viewModelScope.launch {
+            _registerState.value = RegisterState.Loading
+            val response = repository.register(email, password, confirmPassword)
+            _registerState.value = if (response.success) {
+                RegisterState.Success
+            } else {
+                RegisterState.Error(response.message ?: "Error de registre")
+            }
+        }
+    }
+
+    fun resetRegisterState() {
+        _registerState.value = RegisterState.Initial
     }
 
     fun logout() {
@@ -46,5 +69,12 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
         object Loading : LoginState()
         object Success : LoginState()
         data class Error(val message: String) : LoginState()
+    }
+
+    sealed class RegisterState {
+        object Initial : RegisterState()
+        object Loading : RegisterState()
+        object Success : RegisterState()
+        data class Error(val message: String) : RegisterState()
     }
 }

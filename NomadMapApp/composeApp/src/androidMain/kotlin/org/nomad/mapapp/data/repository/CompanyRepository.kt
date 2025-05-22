@@ -31,6 +31,6 @@ class CompanyRepository(private val apiClient: ApiClient) {
     }
 
     suspend fun rateCompany(companyId: String, score: Float, userId: String): Boolean {
-        return apiClient.rateCompany(companyId, score, userId)
+        return apiClient.rateCompany(companyId.toInt(), score, userId)
     }
 }

@@ -77,18 +77,34 @@ fun CompanyDetailsScreen(
                             style = MaterialTheme.typography.headlineMedium
                         )
 
-                        Divider()
+                        HorizontalDivider()
 
-                        Row {
-                            Text(
-                                text = stringResource(R.string.address),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.width(100.dp)
-                            )
-                            Text(
-                                text = company!!.address.location,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                        company?.address?.let { address ->
+                            Row {
+                                Text(
+                                    text = stringResource(R.string.address),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.width(100.dp)
+                                )
+                                Text(
+                                    text = address.location,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        } ?: run {
+                            // Handle case where address is null
+                            Row {
+                                Text(
+                                    text = stringResource(R.string.address),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.width(100.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.address_unavailable),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
                         }
 
                         Row {
@@ -98,7 +114,7 @@ fun CompanyDetailsScreen(
                                 modifier = Modifier.width(100.dp)
                             )
                             Text(
-                                text = company!!.phone,
+                                text = company!!.getPhoneAsString(),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -164,7 +180,7 @@ fun CompanyDetailsScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            company!!.tags.forEach { tag ->
+                            company!!.getTagsList().forEach { tag ->
                                 SuggestionChip(
                                     onClick = { },
                                     label = { Text(tag) }

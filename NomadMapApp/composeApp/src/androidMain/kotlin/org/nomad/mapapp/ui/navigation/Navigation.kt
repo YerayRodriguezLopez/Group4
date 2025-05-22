@@ -1,15 +1,11 @@
 package org.nomad.mapapp.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import org.nomad.mapapp.ui.screen.CompanyDetailsScreen
-import org.nomad.mapapp.ui.screen.CompanyListScreen
-import org.nomad.mapapp.ui.screen.LoginScreen
-import org.nomad.mapapp.ui.screen.MapScreen
+import org.nomad.mapapp.ui.screen.*
 import org.nomad.mapapp.ui.viewmodel.CompanyDetailsViewModel
 import org.nomad.mapapp.ui.viewmodel.LoginViewModel
 import org.nomad.mapapp.ui.viewmodel.MapViewModel
@@ -18,6 +14,7 @@ sealed class Screen(val route: String) {
     object Map : Screen("map")
     object List : Screen("list")
     object Login : Screen("login")
+    object Register : Screen("register")
     object CompanyDetails : Screen("company_details/{companyId}")
 
     fun createRoute(vararg args: String): String {
@@ -51,13 +48,20 @@ fun AppNavigation(
                 viewModel = mapViewModel,
                 onCompanySelected = { company ->
                     companyDetailsViewModel.selectCompany(company)
-                    navController.navigate(Screen.CompanyDetails.createRoute(company.id))
+                    navController.navigate(Screen.CompanyDetails.createRoute(company.id.toString()))
                 }
             )
         }
 
         composable(Screen.Login.route) {
             LoginScreen(
+                navController = navController,
+                viewModel = loginViewModel
+            )
+        }
+
+        composable(Screen.Register.route) {
+            RegisterScreen(
                 navController = navController,
                 viewModel = loginViewModel
             )
