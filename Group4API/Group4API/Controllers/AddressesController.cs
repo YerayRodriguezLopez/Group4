@@ -5,18 +5,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Group4API.Controllers
 {
+    /// <summary>
+    /// Controller for managing addresses in the database.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class AddressesController : ControllerBase
     {
         private readonly Group4DbContext _context;
 
+        /// <summary>
+        /// Constructor for the AddressesController.
+        /// </summary>
+        /// <param name="context"></param>
         public AddressesController(Group4DbContext context)
         {
             _context = context;
         }
 
         // GET: api/Addresses
+        /// <summary>
+        /// Retrieves all addresses from the database.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Address>>> GetAddresses()
         {
@@ -24,6 +35,11 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Addresses/5
+        /// <summary>
+        /// Retrieves a specific address by its ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Address>> GetAddress(int id)
         {
@@ -38,6 +54,11 @@ namespace Group4API.Controllers
         }
 
         // POST: api/Addresses
+        /// <summary>
+        /// Creates a new address in the database.
+        /// </summary>
+        /// <param name="address"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<Address>> PostAddress(Address address)
         {
@@ -55,6 +76,12 @@ namespace Group4API.Controllers
         }
 
         // PUT: api/Addresses/5
+        /// <summary>
+        /// Updates an existing address in the database.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="address"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAddress(int id, Address address)
         {
@@ -92,6 +119,11 @@ namespace Group4API.Controllers
         }
 
         // DELETE: api/Addresses/5
+        /// <summary>
+        /// Deletes a specific address by its ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAddress(int id)
         {
@@ -106,7 +138,11 @@ namespace Group4API.Controllers
 
             return NoContent();
         }
-
+        /// <summary>
+        /// Checks if an address exists in the database by its ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         private bool AddressExists(int id)
         {
             return _context.Addresses.Any(e => e.Id == id);

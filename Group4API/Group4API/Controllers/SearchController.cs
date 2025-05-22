@@ -5,12 +5,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Group4API.Controllers
 {
+    /// <summary>
+    /// Controller for searching companies in the database.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class SearchController : ControllerBase
     {
         private readonly Group4DbContext _context;
 
+        /// <summary>
+        /// Constructor for the SearchController.
+        /// </summary>
+        /// <param name="context"></param>
         public SearchController(Group4DbContext context)
         {
             _context = context;
@@ -69,6 +76,14 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Search/nearby?lat=41.123&lng=2.456&distance=5
+        /// <summary>
+        /// Retrieves companies nearby a given latitude and longitude within a specified distance.
+        /// </summary>
+        /// <param name="lat"></param>
+        /// <param name="lng"></param>
+        /// <param name="distance"></param>
+        /// <param name="isProvider"></param>
+        /// <returns></returns>
         [HttpGet("nearby")]
         public async Task<ActionResult<IEnumerable<Company>>> GetNearbyCompanies(
             [FromQuery] float lat,
@@ -104,6 +119,14 @@ namespace Group4API.Controllers
         }
 
         // Helper method to calculate distance between two points using Haversine formula
+        /// <summary>
+        /// Calculates the distance between two geographical points using the Haversine formula.
+        /// </summary>
+        /// <param name="lat1"></param>
+        /// <param name="lng1"></param>
+        /// <param name="lat2"></param>
+        /// <param name="lng2"></param>
+        /// <returns></returns>
         private float CalculateDistance(float lat1, float lng1, float lat2, float lng2)
         {
             const float EarthRadiusKm = 6371.0f;
@@ -122,6 +145,11 @@ namespace Group4API.Controllers
             return (float)distance;
         }
 
+        /// <summary>
+        /// Converts degrees to radians.
+        /// </summary>
+        /// <param name="degree"></param>
+        /// <returns></returns>
         private float DegreeToRadian(float degree)
         {
             return (float)(degree * Math.PI / 180);
