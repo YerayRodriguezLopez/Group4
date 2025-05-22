@@ -5,18 +5,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Group4API.Controllers
 {
+    /// <summary>
+    /// Controller for managing rates in the database.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class RatesController : ControllerBase
     {
         private readonly Group4DbContext _context;
 
+        /// <summary>
+        /// Constructor for the RatesController.
+        /// </summary>
+        /// <param name="context"></param>
         public RatesController(Group4DbContext context)
         {
             _context = context;
         }
 
         // GET: api/Rates
+        /// <summary>
+        /// Retrieves all rates from the database.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Rate>>> GetRates()
         {
@@ -27,6 +38,11 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Rates/5
+        /// <summary>
+        /// Retrieves a specific rate by its ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Rate>> GetRate(int id)
         {
@@ -44,6 +60,11 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Rates/company/5
+        /// <summary>
+        /// Retrieves all rates for a specific company by its ID.
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <returns></returns>
         [HttpGet("company/{companyId}")]
         public async Task<ActionResult<IEnumerable<Rate>>> GetRatesByCompany(int companyId)
         {
@@ -60,6 +81,11 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Rates/user/userId
+        /// <summary>
+        /// Retrieves all rates for a specific user by their ID.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<Rate>>> GetRatesByUser(string userId)
         {
@@ -76,6 +102,11 @@ namespace Group4API.Controllers
         }
 
         // POST: api/Rates
+        /// <summary>
+        /// Creates a new rate in the database.
+        /// </summary>
+        /// <param name="rate"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<Rate>> PostRate(Rate rate)
         {
@@ -112,6 +143,12 @@ namespace Group4API.Controllers
         }
 
         // PUT: api/Rates/5
+        /// <summary>
+        /// Updates an existing rate in the database.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="rate"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> PutRate(int id, Rate rate)
         {
@@ -145,6 +182,11 @@ namespace Group4API.Controllers
         }
 
         // DELETE: api/Rates/5
+        /// <summary>
+        /// Deletes a rate from the database.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRate(int id)
         {
@@ -166,6 +208,11 @@ namespace Group4API.Controllers
         }
 
         // Helper method to update company score based on rates
+        /// <summary>
+        /// Updates the overall score of a company based on its rates.
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <returns></returns>
         private async Task UpdateCompanyScore(int companyId)
         {
             var company = await _context.Companies
@@ -179,6 +226,11 @@ namespace Group4API.Controllers
             }
         }
 
+        /// <summary>
+        /// Checks if a rate exists in the database by its ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         private bool RateExists(int id)
         {
             return _context.Rates.Any(e => e.Id == id);

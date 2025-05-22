@@ -5,18 +5,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Group4API.Controllers
 {
+    /// <summary>
+    /// Controller for managing companies in the database.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class CompaniesController : ControllerBase
     {
         private readonly Group4DbContext _context;
 
+        /// <summary>
+        /// Constructor for the CompaniesController.
+        /// </summary>
+        /// <param name="context"></param>
         public CompaniesController(Group4DbContext context)
         {
             _context = context;
         }
 
         // GET: api/Companies
+        /// <summary>
+        /// Retrieves all companies from the database.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
         {
@@ -27,6 +38,11 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Companies/5
+        /// <summary>
+        /// Retrieves a specific company by its ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Company>> GetCompany(int id)
         {
@@ -46,6 +62,10 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Companies/providers
+        /// <summary>
+        /// Retrieves all companies that are marked as providers.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("providers")]
         public async Task<ActionResult<IEnumerable<Company>>> GetProviders()
         {
@@ -57,6 +77,11 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Companies/5/providers
+        /// <summary>
+        /// Retrieves all providers associated with a specific company.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}/providers")]
         public async Task<ActionResult<IEnumerable<Company>>> GetCompanyProviders(int id)
         {
@@ -75,6 +100,11 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Companies/5/clients
+        /// <summary>
+        /// Retrieves all clients associated with a specific provider company.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}/clients")]
         public async Task<ActionResult<IEnumerable<Company>>> GetProviderClients(int id)
         {
@@ -98,6 +128,11 @@ namespace Group4API.Controllers
         }
 
         // POST: api/Companies
+        /// <summary>
+        /// Creates a new company in the database.
+        /// </summary>
+        /// <param name="company"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<Company>> PostCompany(Company company)
         {
@@ -108,6 +143,12 @@ namespace Group4API.Controllers
         }
 
         // POST: api/Companies/5/providers/3
+        /// <summary>
+        /// Associates a provider with a company.
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="providerId"></param>
+        /// <returns></returns>
         [HttpPost("{companyId}/providers/{providerId}")]
         public async Task<ActionResult> AddProviderToCompany(int companyId, int providerId)
         {
@@ -150,6 +191,12 @@ namespace Group4API.Controllers
         }
 
         // PUT: api/Companies/5
+        /// <summary>
+        /// Updates an existing company in the database.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="company"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCompany(int id, Company company)
         {
@@ -180,6 +227,11 @@ namespace Group4API.Controllers
         }
 
         // DELETE: api/Companies/5
+        /// <summary>
+        /// Deletes a company from the database.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCompany(int id)
         {
@@ -196,6 +248,12 @@ namespace Group4API.Controllers
         }
 
         // DELETE: api/Companies/5/providers/3
+        /// <summary>
+        /// Removes a provider from a company.
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="providerId"></param>
+        /// <returns></returns>
         [HttpDelete("{companyId}/providers/{providerId}")]
         public async Task<IActionResult> RemoveProviderFromCompany(int companyId, int providerId)
         {
@@ -213,6 +271,11 @@ namespace Group4API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Checks if a company exists in the database by its ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         private bool CompanyExists(int id)
         {
             return _context.Companies.Any(e => e.Id == id);

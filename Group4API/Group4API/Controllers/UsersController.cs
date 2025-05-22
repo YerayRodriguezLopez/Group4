@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Group4API.Controllers
 {
+    /// <summary>
+    /// Controller for managing users in the database.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -14,6 +17,11 @@ namespace Group4API.Controllers
         private readonly Group4DbContext _context;
         private readonly UserManager<User> _userManager;
 
+        /// <summary>
+        /// Constructor for the UsersController.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="userManager"></param>
         public UsersController(Group4DbContext context, UserManager<User> userManager)
         {
             _context = context;
@@ -21,6 +29,10 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Users
+        /// <summary>
+        /// Retrieves all users from the database.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
@@ -30,6 +42,11 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Users/5
+        /// <summary>
+        /// Retrieves a specific user by their ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(string id)
         {
@@ -46,6 +63,11 @@ namespace Group4API.Controllers
         }
 
         // GET: api/Users/5/rates
+        /// <summary>
+        /// Retrieves all rates for a specific user by their ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}/rates")]
         public async Task<ActionResult<IEnumerable<Rate>>> GetUserRates(string id)
         {
@@ -63,6 +85,11 @@ namespace Group4API.Controllers
         }
 
         // POST: api/Users
+        /// <summary>
+        /// Creates a new user in the database.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<User>> RegisterUser(RegisterUserModel model)
         {
@@ -92,6 +119,12 @@ namespace Group4API.Controllers
         }
 
         // PUT: api/Users/5
+        /// <summary>
+        /// Updates an existing user in the database.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(string id, UpdateUserModel model)
         {
@@ -134,6 +167,11 @@ namespace Group4API.Controllers
         }
 
         // DELETE: api/Users/5
+        /// <summary>
+        /// Deletes a specific user by their ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
