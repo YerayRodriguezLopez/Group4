@@ -229,8 +229,7 @@ namespace Group4API.Controllers
                 .Select(r => new {
                     r.Id,
                     r.Score,
-                    UserEmail = r.User.Email,
-                    CreatedDate = r.CreatedDate // Assuming you have this field
+                    UserEmail = r.User.Email
                 })
                 .ToListAsync();
 
