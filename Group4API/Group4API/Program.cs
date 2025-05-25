@@ -1,70 +1,58 @@
-using Microsoft.EntityFrameworkCore;
-using Group4API.Context;
-using Microsoft.OpenApi.Models;
-using Group4API.Model;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-
-namespace Group4API
+// DTOs/CompanyDto.cs
+namespace Group4API.DTOs
 {
-    public class Program
+    public class CompanyDto
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+        public int Id { get; set; }
+        public string NIF { get; set; }
+        public string Name { get; set; }
+        public string Mail { get; set; }
+        public int Phone { get; set; }
+        public string Tags { get; set; }
+        public decimal Score { get; set; }
+        public bool IsProvider { get; set; }
+        public bool IsRetail { get; set; }
+        public AddressDto Address { get; set; }
+        public List<RateDto> Rates { get; set; } = new List<RateDto>();
+    }
+}
 
-            // Add services to the container.  
-            builder.Services.AddControllers();
+// DTOs/AddressDto.cs
+namespace Group4API.DTOs
+{
+    public class AddressDto
+    {
+        public int Id { get; set; }
+        public string Location { get; set; }
+        public float Lat { get; set; }
+        public float Lng { get; set; }
+        public int CompanyId { get; set; }
+    }
+}
 
-            // Add database context
-            builder.Services.AddDbContext<Group4DbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// DTOs/RateDto.cs
+namespace Group4API.DTOs
+{
+    public class RateDto
+    {
+        public int Id { get; set; }
+        public string UserId { get; set; }
+        public int CompanyId { get; set; }
+        public decimal Score { get; set; }
+        // Include user/company info without circular references
+        public string UserEmail { get; set; }
+        public string CompanyName { get; set; }
+    }
+}
 
-            // Add Identity services
-            builder.Services.AddIdentity<User, IdentityRole>(options =>
-            {
-                // Configure Identity options if needed
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequiredLength = 6;
-            })
-                .AddEntityFrameworkStores<Group4DbContext>() // Ensure the correct namespace is included
-                .AddDefaultTokenProviders();
-
-            // Add Swagger services  
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "Group4API",
-                    Version = "v1"
-                });
-            });
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.  
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Group4API v1");
-                });
-            }
-
-            app.UseHttpsRedirection();
-
-            // Add authentication middleware
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.MapControllers();
-
-            app.Run();
-        }
+// DTOs/UserDto.cs
+namespace Group4API.DTOs
+{
+    public class UserDto
+    {
+        public string Id { get; set; }
+        public string Email { get; set; }
+        public string UserName { get; set; }
+        public List<RateDto> Rates { get; set; } = new List<RateDto>();
     }
 }
