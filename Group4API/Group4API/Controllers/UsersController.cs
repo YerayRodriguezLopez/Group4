@@ -193,5 +193,20 @@ namespace Group4API.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("{email},{password}")]
+        public async Task<ActionResult<User>> GetLogin(string email, string password)
+        {
+            var user = await _context.Users
+                .Include(u => u.Rates)
+                .FirstOrDefaultAsync(u => u.Email == email && u.PasswordHash == password);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return user;
+        }
     }
 }
