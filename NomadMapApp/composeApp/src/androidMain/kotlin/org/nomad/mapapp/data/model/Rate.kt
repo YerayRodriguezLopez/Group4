@@ -7,5 +7,7 @@ data class Rate(
     val id: Int = 0,
     val userId: String,
     val companyId: Int,
-    val score: Float
+    val score: Float,
+    val user: User? = null,
+    val company: Company? = null
 )

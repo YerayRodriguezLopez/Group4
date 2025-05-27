@@ -27,7 +27,6 @@ fun RegisterScreen(
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
 
     LaunchedEffect(key1 = Unit) {
         viewModel.resetRegisterState()
@@ -96,14 +95,6 @@ fun RegisterScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        OutlinedTextField(
-                            value = confirmPassword,
-                            onValueChange = { confirmPassword = it },
-                            label = { Text(stringResource(R.string.confirm_password)) },
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
                         when (registerState) {
                             is LoginViewModel.RegisterState.Error -> {
                                 Text(
@@ -124,10 +115,9 @@ fun RegisterScreen(
                         }
 
                         Button(
-                            onClick = { viewModel.register(email, password, confirmPassword) },
+                            onClick = { viewModel.register(email, password) },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = email.isNotEmpty() && password.isNotEmpty() &&
-                                    confirmPassword.isNotEmpty() &&
                                     registerState !is LoginViewModel.RegisterState.Loading
                         ) {
                             Text(stringResource(R.string.register))

@@ -26,9 +26,17 @@ fun CompanyDetailsScreen(
 ) {
     val company by viewModel.selectedCompany.collectAsState()
     val ratingState by viewModel.ratingState.collectAsState()
+    val existingRating by viewModel.existingRating.collectAsState()
     val isLoggedIn = loginViewModel.isLoggedIn()
 
     var userRating by remember { mutableStateOf(0f) }
+
+    // Set user rating if they have already rated this company
+    LaunchedEffect(existingRating) {
+        existingRating?.let {
+            userRating = it.score
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -79,32 +87,16 @@ fun CompanyDetailsScreen(
 
                         HorizontalDivider()
 
-                        company?.address?.let { address ->
-                            Row {
-                                Text(
-                                    text = stringResource(R.string.address),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.width(100.dp)
-                                )
-                                Text(
-                                    text = address.location,
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                            }
-                        } ?: run {
-                            // Handle case where address is null
-                            Row {
-                                Text(
-                                    text = stringResource(R.string.address),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.width(100.dp)
-                                )
-                                Text(
-                                    text = stringResource(R.string.address_unavailable),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
+                        Row {
+                            Text(
+                                text = stringResource(R.string.address),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.width(100.dp)
+                            )
+                            Text(
+                                text = company!!.address?.location ?: stringResource(R.string.address_unavailable),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
                         }
 
                         Row {
@@ -121,7 +113,7 @@ fun CompanyDetailsScreen(
 
                         Row {
                             Text(
-                                text = stringResource(R.string.email),
+                                text = stringResource(R.string.email_label),
                                 style = MaterialTheme.typography.bodyLarge,
                                 modifier = Modifier.width(100.dp)
                             )
@@ -155,7 +147,7 @@ fun CompanyDetailsScreen(
                                 modifier = Modifier.width(100.dp)
                             )
                             Text(
-                                text = "★ ${company!!.score}",
+                                text = "★ ${company!!.getDisplayScore()}",
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -202,9 +194,21 @@ fun CompanyDetailsScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = stringResource(R.string.rate_company),
+                                text = if (existingRating != null) {
+                                    stringResource(R.string.update_rating)
+                                } else {
+                                    stringResource(R.string.rate_company)
+                                },
                                 style = MaterialTheme.typography.titleLarge
                             )
+
+                            if (existingRating != null) {
+                                Text(
+                                    text = stringResource(R.string.current_rating, existingRating!!.score),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
 
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -250,8 +254,30 @@ fun CompanyDetailsScreen(
                                 onClick = { viewModel.rateCompany(userRating) },
                                 enabled = userRating > 0 && ratingState !is CompanyDetailsViewModel.RatingState.Loading
                             ) {
-                                Text(stringResource(R.string.submit_rating))
+                                Text(
+                                    if (existingRating != null) {
+                                        stringResource(R.string.update_rating)
+                                    } else {
+                                        stringResource(R.string.submit_rating)
+                                    }
+                                )
                             }
+                        }
+                    }
+                } else {
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.login_to_rate),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
                         }
                     }
                 }

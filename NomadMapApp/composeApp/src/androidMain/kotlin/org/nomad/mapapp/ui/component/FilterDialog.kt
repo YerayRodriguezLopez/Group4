@@ -17,11 +17,18 @@ fun FilterDialog(
     onTagsSelected: (Set<String>) -> Unit,
     onDismiss: () -> Unit
 ) {
-    // This would normally be fetched from the API
     val availableTags = remember {
         listOf(
-            "Sostenible", "Ecològic", "Artesanal", "Local", "Vegà",
-            "Reciclat", "Comerç just", "Orgànic", "Zero residus", "Segona mà"
+            "Todos", "accesorios", "Algodón Pima Orgánico", "alquiler de prendas y accesorios",
+            "Artesanía", "Bajo Impacto", "bolsos veganos", "Branding", "calcetines",
+            "diseño de estampados", "Diseño y arte", "Genderless", "haramaki", "marketplace",
+            "materia prima", "moda", "Moda Inclusiva", "Moda infantil", "Moda mujer",
+            "Moda sin género", "outlet", "Producción local", "Recién nacido",
+            "revalorización segunda mano", "Ropa de baño", "ropa de hombre", "ropa de mujer",
+            "ropa ecológica y ética", "ropa infantil", "ropa sostenible",
+            "Ropa sostenible pintada a mano", "Second Hand", "Segunda mano", "SOLIDARIA",
+            "textil hogar", "textil orgánico", "textiles reciclados sostenibles",
+            "tienda multimarca", "zapatos veganos"
         )
     }
 

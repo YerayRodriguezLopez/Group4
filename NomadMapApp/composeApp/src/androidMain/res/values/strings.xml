@@ -27,6 +27,8 @@
     <string name="rate_company">Valorar aquesta empresa</string>
     <string name="submit_rating">Enviar valoració</string>
     <string name="rating_success">Valoració enviada correctament</string>
+    <string name="your_rating">Your Rating</string>
+    <string name="already_rated">You have already rated this company</string>
     <string name="filter_by_tags">Filtrar per etiquetes</string>
     <string name="cancel">Cancel·lar</string>
     <string name="apply">Aplicar</string>
@@ -37,4 +39,8 @@
     <string name="confirm_password">Confirmar contrasenya</string>
     <string name="registration_success">Registre completat amb èxit</string>
     <string name="address_unavailable">No disponible</string>
+    <string name="my_location">La meva ubicació</string>
+    <string name="update_rating">Actualitzar valoració</string>
+    <string name="current_rating">Valoració actual: %.1f</string>
+    <string name="login_to_rate">Inicia sessió per valorar</string>
 </resources>

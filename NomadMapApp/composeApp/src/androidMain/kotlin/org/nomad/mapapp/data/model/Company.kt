@@ -14,11 +14,11 @@ data class Company(
     val isProvider: Boolean,
     val isRetail: Boolean,
     val addressId: Int = 0,
-    val address: Address? = null
+    val address: Address? = null,
+    val ratingsCount: Int = 0,
+    val averageRating: Float = 0f
 ) {
-    // Parse phone number to string when needed
     fun getPhoneAsString(): String = phone.toString()
-
-    // Parse tags CSV to list
-    fun getTagsList(): List<String> = tags.split(",").map { it.trim() }
+    fun getTagsList(): List<String> = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+    fun getDisplayScore(): Float = if (ratingsCount > 0) averageRating else 0f
 }

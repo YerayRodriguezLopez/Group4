@@ -11,6 +11,5 @@ data class Address(
     val lng: Float,
     val companyId: Int = 0
 ) {
-    // Helper method to get coordinates as a LatLng object for Google Maps
     fun toLatLng(): LatLng = LatLng(lat.toDouble(), lng.toDouble())
 }

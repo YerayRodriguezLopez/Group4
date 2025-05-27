@@ -30,23 +30,23 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
-            val response = repository.login(email, password)
-            _loginState.value = if (response.success) {
+            val loginSuccessful = repository.login(email, password)
+            _loginState.value = if (loginSuccessful) {
                 LoginState.Success
             } else {
-                LoginState.Error(response.message ?: "Error d'autenticació")
+                LoginState.Error("Credencials incorrectes")
             }
         }
     }
 
-    fun register(email: String, password: String, confirmPassword: String) {
+    fun register(email: String, password: String) {
         viewModelScope.launch {
             _registerState.value = RegisterState.Loading
-            val response = repository.register(email, password, confirmPassword)
-            _registerState.value = if (response.success) {
+            val registerSuccessful = repository.register(email, password)
+            _registerState.value = if (registerSuccessful) {
                 RegisterState.Success
             } else {
-                RegisterState.Error(response.message ?: "Error de registre")
+                RegisterState.Error("Error de registre")
             }
         }
     }

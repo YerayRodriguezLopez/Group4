@@ -10,9 +10,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import org.nomad.mapapp.R
 import org.nomad.mapapp.data.model.Company
 import org.nomad.mapapp.ui.component.FilterDialog
@@ -27,11 +31,34 @@ fun CompanyListScreen(
     viewModel: MapViewModel,
     onCompanySelected: (Company) -> Unit
 ) {
+    val context = LocalContext.current
     val companies by viewModel.companies.collectAsState()
     val selectedTags by viewModel.selectedTags.collectAsState()
-    var showFilterDialog by remember { mutableStateOf(false) }
+    val isLoading by viewModel.isLoading.collectAsState()
 
-    val filteredCompanies = viewModel.getFilteredCompanies()
+    var showFilterDialog by remember { mutableStateOf(false) }
+    var sortedCompanies by remember { mutableStateOf<List<Company>>(emptyList()) }
+
+    val scope = rememberCoroutineScope()
+
+    // Get user location and sort companies by proximity
+    LaunchedEffect(companies) {
+        try {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            val location = fusedLocationClient.lastLocation.await()
+
+            if (location != null) {
+                sortedCompanies = viewModel.getCompaniesSortedByProximity(
+                    location.latitude.toFloat(),
+                    location.longitude.toFloat()
+                )
+            } else {
+                sortedCompanies = companies
+            }
+        } catch (e: Exception) {
+            sortedCompanies = companies
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -59,7 +86,14 @@ fun CompanyListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (filteredCompanies.isEmpty()) {
+            if (isLoading) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (sortedCompanies.isEmpty()) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.fillMaxSize()
@@ -70,7 +104,7 @@ fun CompanyListScreen(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(filteredCompanies) { company ->
+                    items(sortedCompanies) { company ->
                         ListItem(
                             headlineContent = { Text(company.name) },
                             supportingContent = {
@@ -92,7 +126,7 @@ fun CompanyListScreen(
                                 }
                             },
                             trailingContent = {
-                                Text("★ ${company.score}")
+                                Text("★ ${company.getDisplayScore()}")
                             },
                             modifier = Modifier
                                 .clickable { onCompanySelected(company) }

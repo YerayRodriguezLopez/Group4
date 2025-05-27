@@ -17,33 +17,44 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
     private val _selectedTags = MutableStateFlow<Set<String>>(emptySet())
     val selectedTags: StateFlow<Set<String>> = _selectedTags.asStateFlow()
 
-    private val _searchRadius = MutableStateFlow(5.0) // 5 km default
-    val searchRadius: StateFlow<Double> = _searchRadius.asStateFlow()
-
     private val _lastMapPosition = MutableStateFlow<LatLng?>(null)
     val lastMapPosition: StateFlow<LatLng?> = _lastMapPosition.asStateFlow()
 
     private val _isDaltonismMode = MutableStateFlow(false)
     val isDaltonismMode: StateFlow<Boolean> = _isDaltonismMode.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
         viewModelScope.launch {
             repository.companies.collect {
                 _companies.value = it
+                println("MapViewModel received ${it.size} companies")
             }
         }
+
+        viewModelScope.launch {
+            repository.isLoading.collect {
+                _isLoading.value = it
+            }
+        }
+
+        // Load initial companies
+        loadInitialCompanies()
     }
 
-    fun fetchCompaniesNearby(lat: Double, lng: Double) {
+    private fun loadInitialCompanies() {
         viewModelScope.launch {
-            repository.fetchCompaniesNearby(lat, lng, _searchRadius.value)
+            println("Loading initial companies...")
+            repository.fetchCompanies()
         }
     }
 
-    fun updateSearchRadius(radius: Double) {
-        _searchRadius.value = radius
-        _lastMapPosition.value?.let {
-            fetchCompaniesNearby(it.latitude, it.longitude)
+    fun fetchCompaniesNearby(lat: Float, lng: Float, distance: Float = 5.0f) {
+        viewModelScope.launch {
+            println("Fetching companies nearby: lat=$lat, lng=$lng, distance=$distance")
+            repository.fetchCompaniesNearby(lat, lng, distance)
         }
     }
 
@@ -53,6 +64,13 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
 
     fun updateSelectedTags(tags: Set<String>) {
         _selectedTags.value = tags
+        if (tags.isNotEmpty()) {
+            viewModelScope.launch {
+                repository.searchCompanies(tags = tags.joinToString(","))
+            }
+        } else {
+            loadInitialCompanies()
+        }
     }
 
     fun toggleDaltonismMode() {
@@ -60,12 +78,16 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
     }
 
     fun getFilteredCompanies(): List<Company> {
-        return if (_selectedTags.value.isEmpty()) {
-            _companies.value
-        } else {
-            _companies.value.filter { company ->
-                company.getTagsList().any { tag -> tag in _selectedTags.value }
-            }
+        return _companies.value
+    }
+
+    fun getCompaniesSortedByProximity(userLat: Float, userLng: Float): List<Company> {
+        return _companies.value.sortedBy { company ->
+            company.address?.let { address ->
+                val latDiff = address.lat - userLat
+                val lngDiff = address.lng - userLng
+                kotlin.math.sqrt((latDiff * latDiff + lngDiff * lngDiff).toDouble()).toFloat()
+            } ?: Float.MAX_VALUE
         }
     }
 }
