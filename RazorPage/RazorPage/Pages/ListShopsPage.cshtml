@@ -1,0 +1,52 @@
+﻿@page
+@model RazorPage.Pages.ListShopsPageModel
+@{
+    ViewData["Title"] = "List Companies";
+}
+<div>
+    @if (!Model.Addresses.Any() || !Model.Companies.Any())
+    {
+                        <p>No companies found.</p>
+    }
+    else
+    {
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name Company</th>
+                                    <th>Mail</th>
+                                    <th>Phone</th>
+                                    <th>Score</th>
+                                    <th>Location</th>
+                                    <th>Mote Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                @foreach (var address in Model.Addresses)
+                {
+                    @foreach(var company in Model.Companies)
+                    {
+                        @if(address.CompanyId == company.Id)
+                        {
+                                             <tr>
+                                                                <td>@company.Name</td>
+                                                                <td>@company.Mail</td>
+                                                                <td>@company.Phone</td>
+                                                                <td>@company.Score</td>
+                                                                <td>@address.Location</td>
+                                                                <td><a asp-page="/DetailCompany"
+                                                                    asp-route-id="@company.Id"
+                                                                    class="text-decoration-none text-dark">
+                                                                    <button>Detail Company</button>
+                                                               </a>
+                                                               </td>
+                                                            </tr>
+                        }
+                    }
+                                                    
+                }
+                            </tbody>
+                        </table>
+    }
+
+</div>

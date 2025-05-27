@@ -1,0 +1,113 @@
+﻿@page
+@model RazorPage.Pages.ContactModel
+@{
+	ViewData["Title"] = "Contact";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+        }
+        .contact-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .contact-info div {
+            width: 30%;
+        }
+        .form-container {
+            background-color: white;
+            padding: 70px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input, textarea {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="submit"] {
+            background-color: #333;
+            color: white;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #555;
+        }
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Contact Us</h1>
+</header>
+
+<div class="container">
+    <div class="contact-info">
+        <div>
+            <h2>Phone</h2>
+            <p>+34 665933893</p>
+        </div>
+        <div>
+            <h2>Email</h2>
+            <p>contact@company.com</p>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <h2>Send Us a Message</h2>
+        <form action="https://formspree.io/f/xqaqjdnp" method="POST">
+            <label for="name">Your Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Your Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="text">Issue:</label>
+            <input type="text" id="issue" name="issue" required>
+
+            <label for="message">Your Message:</label>
+            <textarea id="message" name="message" rows="5"></textarea>
+
+            <input type="submit" value="Send Message">
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
