@@ -25,21 +25,22 @@ class ApiClient {
         }
     }
 
-    private val baseUrl = "https://nomadg4api.azurewebsites.net"
+    // Update this with your actual API URL
+    private val baseUrl = "https://group4apiapi.azure-api.net"
 
-    // Hash password using SHA256 to match the API expectations
+    // Hash password using SHA256 for login
     private fun hashPassword(password: String): String {
         val digest = MessageDigest.getInstance("SHA-256")
         val hashBytes = digest.digest(password.toByteArray())
         return hashBytes.joinToString("") { "%02x".format(it) }
     }
 
-    // Authentication
+    // Authentication - Login expects hashed password, Register expects plain password
     suspend fun login(email: String, password: String): User? {
         return try {
             val hashedPassword = hashPassword(password)
-            // Actual endpoint: GET: api/Users/{email},{password}
-            client.get("$baseUrl/api/Users/$email,$hashedPassword").body()
+            val response = client.get("$baseUrl/api/Users/$email,$hashedPassword")
+            response.body<User>()
         } catch (e: Exception) {
             println("Login error: ${e.message}")
             null
@@ -48,28 +49,27 @@ class ApiClient {
 
     suspend fun register(email: String, password: String): User? {
         return try {
-            // Actual endpoint: POST: api/Users
-            client.post("$baseUrl/api/Users") {
+            val response = client.post("$baseUrl/api/Users") {
                 contentType(ContentType.Application.Json)
                 setBody(RegisterUserModel(
                     email = email,
-                    password = password,
+                    password = password, // Plain password - API will hash it
                     userName = email,
                     phoneNumber = null
                 ))
-            }.body()
+            }
+            response.body<User>()
         } catch (e: Exception) {
             println("Register error: ${e.message}")
             null
         }
     }
 
-    // Companies
+    // Companies - Using the exact response structure from your API
     suspend fun getCompanies(): List<Company> {
         return try {
-            // Actual endpoint: GET: api/Companies
             val response = client.get("$baseUrl/api/Companies")
-            response.body()
+            response.body<List<Company>>()
         } catch (e: Exception) {
             println("Get companies error: ${e.message}")
             emptyList()
@@ -78,15 +78,15 @@ class ApiClient {
 
     suspend fun getCompany(id: Int): Company? {
         return try {
-            // Actual endpoint: GET: api/Companies/{id}
-            client.get("$baseUrl/api/Companies/$id").body()
+            val response = client.get("$baseUrl/api/Companies/$id")
+            response.body<Company>()
         } catch (e: Exception) {
             println("Get company error: ${e.message}")
             null
         }
     }
 
-    // Search companies using the SearchController
+    // Search companies using SearchController
     suspend fun searchCompanies(
         query: String? = null,
         isProvider: Boolean? = null,
@@ -95,39 +95,38 @@ class ApiClient {
         tags: String? = null
     ): List<Company> {
         return try {
-            // Actual endpoint: GET: api/Search/companies
-            client.get("$baseUrl/api/Search/companies") {
+            val response = client.get("$baseUrl/api/Search/companies") {
                 if (!query.isNullOrEmpty()) parameter("query", query)
                 if (isProvider != null) parameter("isProvider", isProvider)
                 if (isRetail != null) parameter("isRetail", isRetail)
                 if (minScore != null) parameter("minScore", minScore)
                 if (!tags.isNullOrEmpty()) parameter("tags", tags)
-            }.body()
+            }
+            response.body<List<Company>>()
         } catch (e: Exception) {
             println("Search companies error: ${e.message}")
             emptyList()
         }
     }
 
-    // Get nearby companies using the SearchController
+    // Get nearby companies using SearchController
     suspend fun getCompaniesNearby(lat: Float, lng: Float, distance: Float = 5.0f): List<Company> {
         return try {
-            // Actual endpoint: GET: api/Search/nearby
-            client.get("$baseUrl/api/Search/nearby") {
+            val response = client.get("$baseUrl/api/Search/nearby") {
                 parameter("lat", lat)
                 parameter("lng", lng)
                 parameter("distance", distance)
-            }.body()
+            }
+            response.body<List<Company>>()
         } catch (e: Exception) {
             println("Get nearby companies error: ${e.message}")
             emptyList()
         }
     }
 
-    // Ratings - Based on your RatesController
+    // Ratings
     suspend fun rateCompany(companyId: Int, score: Float, userId: String): Boolean {
         return try {
-            // Actual endpoint: POST: api/Rates
             val response = client.post("$baseUrl/api/Rates") {
                 contentType(ContentType.Application.Json)
                 setBody(Rate(userId = userId, companyId = companyId, score = score))
@@ -141,8 +140,8 @@ class ApiClient {
 
     suspend fun getCompanyRates(companyId: Int): List<Rate> {
         return try {
-            // Actual endpoint: GET: api/Rates/company/{companyId}
-            client.get("$baseUrl/api/Rates/company/$companyId").body()
+            val response = client.get("$baseUrl/api/Rates/company/$companyId")
+            response.body<List<Rate>>()
         } catch (e: Exception) {
             println("Get company rates error: ${e.message}")
             emptyList()
@@ -151,8 +150,8 @@ class ApiClient {
 
     suspend fun getUserRates(userId: String): List<Rate> {
         return try {
-            // Actual endpoint: GET: api/Rates/user/{userId}
-            client.get("$baseUrl/api/Rates/user/$userId").body()
+            val response = client.get("$baseUrl/api/Rates/user/$userId")
+            response.body<List<Rate>>()
         } catch (e: Exception) {
             println("Get user rates error: ${e.message}")
             emptyList()

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Company(
-    val id: Int = 0,
+    val id: Int,
     val nif: String,
     val name: String,
     val mail: String,
@@ -13,10 +13,9 @@ data class Company(
     val score: Float,
     val isProvider: Boolean,
     val isRetail: Boolean,
-    val addressId: Int = 0,
-    val address: Address? = null,
-    val ratingsCount: Int = 0,
-    val averageRating: Float = 0f
+    val address: Address?,
+    val ratingsCount: Int,
+    val averageRating: Float
 ) {
     fun getPhoneAsString(): String = phone.toString()
     fun getTagsList(): List<String> = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }

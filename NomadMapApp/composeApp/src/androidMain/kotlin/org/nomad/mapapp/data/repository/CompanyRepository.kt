@@ -1,6 +1,6 @@
 package org.nomad.mapapp.data.repository
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.nomad.mapapp.data.model.Company
@@ -9,13 +9,13 @@ import org.nomad.mapapp.data.network.ApiClient
 
 class CompanyRepository(private val apiClient: ApiClient) {
     private val _companies = MutableStateFlow<List<Company>>(emptyList())
-    val companies: Flow<List<Company>> = _companies.asStateFlow()
+    val companies: StateFlow<List<Company>> = _companies.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: Flow<Boolean> = _isLoading.asStateFlow()
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
-    val error: Flow<String?> = _error.asStateFlow()
+    val error: StateFlow<String?> = _error.asStateFlow()
 
     suspend fun fetchCompanies() {
         try {

@@ -15,7 +15,6 @@ import org.nomad.mapapp.ui.component.MapBottomBar
 import org.nomad.mapapp.ui.navigation.Screen
 import org.nomad.mapapp.ui.viewmodel.LoginViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavController,

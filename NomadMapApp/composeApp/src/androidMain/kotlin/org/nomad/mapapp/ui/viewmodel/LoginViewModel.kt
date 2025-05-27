@@ -19,10 +19,20 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
+        // Collect from repository StateFlows
         viewModelScope.launch {
             repository.currentUser.collect {
                 _currentUser.value = it
+            }
+        }
+
+        viewModelScope.launch {
+            repository.isLoading.collect {
+                _isLoading.value = it
             }
         }
     }

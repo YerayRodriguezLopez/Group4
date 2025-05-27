@@ -49,7 +49,7 @@ class CompanyClusterItem(
     override fun getZIndex(): Float = 0f
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, MapsComposeExperimentalApi::class)
 @Composable
 fun MapScreen(
     navController: NavController,
@@ -61,6 +61,7 @@ fun MapScreen(
     val lastMapPosition by viewModel.lastMapPosition.collectAsState()
     val isDaltonismMode by viewModel.isDaltonismMode.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
@@ -90,6 +91,10 @@ fun MapScreen(
     val scope = rememberCoroutineScope()
     var showFilterDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        viewModel.updateSelectedTags(emptySet())
+    }
+
     // Location permission launcher
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -118,7 +123,8 @@ fun MapScreen(
 
     // Debug: Log companies state
     LaunchedEffect(companies) {
-        println("MapScreen: Companies updated, count = ${companies.size}")
+        println("Companies loaded: ${companies.size}")
+        companies.forEach { println("Company: ${it.name}, address: ${it.address}") }
     }
 
     Scaffold(
@@ -269,8 +275,23 @@ fun MapScreen(
                 }
             }
 
+            // Error message
+            error?.let { errorMessage ->
+                Card(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = errorMessage,
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
             // Debug info
-            if (companies.isEmpty() && !isLoading) {
+            if (companies.isEmpty() && !isLoading && error == null) {
                 Card(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)

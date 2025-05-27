@@ -26,7 +26,11 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     init {
+        // Collect from repository StateFlows
         viewModelScope.launch {
             repository.companies.collect {
                 _companies.value = it
@@ -37,6 +41,12 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
         viewModelScope.launch {
             repository.isLoading.collect {
                 _isLoading.value = it
+            }
+        }
+
+        viewModelScope.launch {
+            repository.error.collect {
+                _error.value = it
             }
         }
 
@@ -78,7 +88,15 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
     }
 
     fun getFilteredCompanies(): List<Company> {
-        return _companies.value
+        val tags = _selectedTags.value
+        val filtered = if (tags.isEmpty()) {
+            _companies.value
+        } else {
+            _companies.value.filter { company ->
+                company.getTagsList().any { it in tags }
+            }
+        }
+        return if (filtered.isEmpty()) _companies.value else filtered
     }
 
     fun getCompaniesSortedByProximity(userLat: Float, userLng: Float): List<Company> {
