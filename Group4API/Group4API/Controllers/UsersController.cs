@@ -196,7 +196,7 @@ namespace Group4API.Controllers
             return NoContent();
         }
 
-        [HttpGet("{email},{password}")]
+        [HttpPost("{email},{password}")]
         public async Task<ActionResult<User>> GetLogin(string email, string password)
         {
             var user = await _context.Users
