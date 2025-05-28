@@ -24,28 +24,20 @@ jobs:
         run: chmod +x ./NomadMapApp/gradlew
 
       - name: Build Debug APK
-        uses: vgaidarji/android-github-actions-build@v1.1
-        with:
-          args: ./gradlew assembleDebug
-          working-directory: NomadMapApp
+        run: ./gradlew assembleDebug
+        working-directory: NomadMapApp
 
       - name: Build Release APK
-        uses: vgaidarji/android-github-actions-build@v1.1
-        with:
-          args: ./gradlew assembleRelease
-          working-directory: NomadMapApp
+        run: ./gradlew assembleRelease
+        working-directory: NomadMapApp
 
       - name: Build Debug AAB
-        uses: vgaidarji/android-github-actions-build@v1.1
-        with:
-          args: ./gradlew bundleDebug
-          working-directory: NomadMapApp
+        run: ./gradlew bundleDebug
+        working-directory: NomadMapApp
 
       - name: Build Release AAB
-        uses: vgaidarji/android-github-actions-build@v1.1
-        with:
-          args: ./gradlew bundleRelease
-          working-directory: NomadMapApp
+        run: ./gradlew bundleRelease
+        working-directory: NomadMapApp
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
