@@ -18,6 +18,7 @@ class ApiClient {
                 prettyPrint = true
                 isLenient = true
                 ignoreUnknownKeys = true
+                coerceInputValues = true
             })
         }
         install(Logging) {
@@ -35,7 +36,7 @@ class ApiClient {
         return hashBytes.joinToString("") { "%02x".format(it) }
     }
 
-    // Authentication - Login expects hashed password, Register expects plain password
+    // Authentication
     suspend fun login(email: String, password: String): User? {
         return try {
             val hashedPassword = hashPassword(password)
@@ -47,15 +48,15 @@ class ApiClient {
         }
     }
 
-    suspend fun register(email: String, password: String): User? {
+    suspend fun register(email: String, password: String, phoneNumber: String? = null): User? {
         return try {
             val response = client.post("$baseUrl/api/Users") {
                 contentType(ContentType.Application.Json)
                 setBody(RegisterUserModel(
                     email = email,
-                    password = password, // Plain password - API will hash it
+                    password = hashPassword(password),
                     userName = email,
-                    phoneNumber = null
+                    phoneNumber = phoneNumber ?: "000000000"
                 ))
             }
             response.body<User>()
@@ -65,7 +66,7 @@ class ApiClient {
         }
     }
 
-    // Companies - Using the exact response structure from your API
+    // Companies
     suspend fun getCompanies(): List<Company> {
         return try {
             val response = client.get("$baseUrl/api/Companies")

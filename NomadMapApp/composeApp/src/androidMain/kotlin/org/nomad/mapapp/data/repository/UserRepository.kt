@@ -26,7 +26,7 @@ class UserRepository(private val apiClient: ApiClient) {
             if (!success) {
                 _error.value = "Credencials incorrectes"
             }
-            println("Login result: $success")
+            println("Login result: $success, User: $user")
             success
         } catch (e: Exception) {
             _error.value = "Error de connexió: ${e.message}"
@@ -37,16 +37,17 @@ class UserRepository(private val apiClient: ApiClient) {
         }
     }
 
-    suspend fun register(email: String, password: String): Boolean {
+    suspend fun register(email: String, password: String, phoneNumber: String? = null): Boolean {
         return try {
             _isLoading.value = true
             _error.value = null
-            val user = apiClient.register(email, password)
+            val user = apiClient.register(email, password, phoneNumber)
+            // Don't set current user on registration - let them login afterwards
             val success = user != null
             if (!success) {
                 _error.value = "Error de registre"
             }
-            println("Register result: $success")
+            println("Register result: $success, User: $user")
             success
         } catch (e: Exception) {
             _error.value = "Error de connexió: ${e.message}"
@@ -65,5 +66,9 @@ class UserRepository(private val apiClient: ApiClient) {
 
     fun isLoggedIn(): Boolean {
         return _currentUser.value != null
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 }

@@ -22,9 +22,22 @@ fun LoginScreen(
 ) {
     val loginState by viewModel.loginState.collectAsState()
     val currentUser by viewModel.currentUser.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    // Reset login state when screen is first displayed
+    LaunchedEffect(Unit) {
+        viewModel.resetLoginState()
+    }
+
+    // Navigate back after successful login
+    LaunchedEffect(loginState) {
+        if (loginState is LoginViewModel.LoginState.Success) {
+            navController.popBackStack()
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -78,44 +91,76 @@ fun LoginScreen(
 
                             OutlinedTextField(
                                 value = email,
-                                onValueChange = { email = it },
+                                onValueChange = {
+                                    email = it
+                                    // Clear error when user starts typing
+                                    if (loginState is LoginViewModel.LoginState.Error) {
+                                        viewModel.resetLoginState()
+                                    }
+                                },
                                 label = { Text(stringResource(R.string.email)) },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isLoading,
+                                singleLine = true
                             )
 
                             OutlinedTextField(
                                 value = password,
-                                onValueChange = { password = it },
+                                onValueChange = {
+                                    password = it
+                                    // Clear error when user starts typing
+                                    if (loginState is LoginViewModel.LoginState.Error) {
+                                        viewModel.resetLoginState()
+                                    }
+                                },
                                 label = { Text(stringResource(R.string.password)) },
                                 visualTransformation = PasswordVisualTransformation(),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isLoading,
+                                singleLine = true
                             )
 
-                            when (loginState) {
+                            // Show error or loading state
+                            when (val state = loginState) {
                                 is LoginViewModel.LoginState.Error -> {
                                     Text(
-                                        text = (loginState as LoginViewModel.LoginState.Error).message,
-                                        color = MaterialTheme.colorScheme.error
+                                        text = state.message,
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.bodySmall
                                     )
                                 }
                                 is LoginViewModel.LoginState.Loading -> {
                                     CircularProgressIndicator()
                                 }
+                                is LoginViewModel.LoginState.Success -> {
+                                    Text(
+                                        text = "Login exitós!",
+                                        color = MaterialTheme.colorScheme.primary,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
                                 else -> {}
                             }
 
                             Button(
-                                onClick = { viewModel.login(email, password) },
+                                onClick = { viewModel.login(email.trim(), password) },
                                 modifier = Modifier.fillMaxWidth(),
-                                enabled = email.isNotEmpty() && password.isNotEmpty() &&
-                                        loginState !is LoginViewModel.LoginState.Loading
+                                enabled = email.isNotEmpty() && password.isNotEmpty() && !isLoading
                             ) {
-                                Text(stringResource(R.string.login))
+                                if (isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                } else {
+                                    Text(stringResource(R.string.login))
+                                }
                             }
 
                             TextButton(
                                 onClick = { navController.navigate(Screen.Register.route) },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isLoading
                             ) {
                                 Text(stringResource(R.string.create_account))
                             }

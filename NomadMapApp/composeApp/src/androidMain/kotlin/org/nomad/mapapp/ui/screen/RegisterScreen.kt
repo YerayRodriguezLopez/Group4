@@ -5,7 +5,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,16 +24,23 @@ fun RegisterScreen(
     viewModel: LoginViewModel
 ) {
     val registerState by viewModel.registerState.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
 
-    LaunchedEffect(key1 = Unit) {
+    // Reset register state when screen is first displayed
+    LaunchedEffect(Unit) {
         viewModel.resetRegisterState()
     }
 
-    LaunchedEffect(key1 = registerState) {
+    // Navigate back after successful registration
+    LaunchedEffect(registerState) {
         if (registerState is LoginViewModel.RegisterState.Success) {
+            // Show success message briefly then navigate back
+            kotlinx.coroutines.delay(1500)
             navController.popBackStack()
         }
     }
@@ -45,7 +52,7 @@ fun RegisterScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -82,24 +89,83 @@ fun RegisterScreen(
 
                         OutlinedTextField(
                             value = email,
-                            onValueChange = { email = it },
+                            onValueChange = {
+                                email = it
+                                // Clear error when user starts typing
+                                if (registerState is LoginViewModel.RegisterState.Error) {
+                                    viewModel.resetRegisterState()
+                                }
+                            },
                             label = { Text(stringResource(R.string.email)) },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isLoading,
+                            singleLine = true
                         )
 
                         OutlinedTextField(
                             value = password,
-                            onValueChange = { password = it },
+                            onValueChange = {
+                                password = it
+                                // Clear error when user starts typing
+                                if (registerState is LoginViewModel.RegisterState.Error) {
+                                    viewModel.resetRegisterState()
+                                }
+                            },
                             label = { Text(stringResource(R.string.password)) },
                             visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isLoading,
+                            singleLine = true
                         )
 
-                        when (registerState) {
+                        OutlinedTextField(
+                            value = phoneNumber,
+                            onValueChange = {
+                                phoneNumber = it
+                                // Clear error when user starts typing
+                                if (registerState is LoginViewModel.RegisterState.Error) {
+                                    viewModel.resetRegisterState()
+                                }
+                            },
+                            label = { Text("Telèfon (opcional)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isLoading,
+                            singleLine = true
+                        )
+
+                        OutlinedTextField(
+                            value = confirmPassword,
+                            onValueChange = {
+                                confirmPassword = it
+                                // Clear error when user starts typing
+                                if (registerState is LoginViewModel.RegisterState.Error) {
+                                    viewModel.resetRegisterState()
+                                }
+                            },
+                            label = { Text("Confirmar contrasenya") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isLoading,
+                            singleLine = true,
+                            isError = password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword
+                        )
+
+                        // Password validation feedback
+                        if (password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword) {
+                            Text(
+                                text = "Les contrasenyes no coincideixen",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+
+                        // Show register state
+                        when (val state = registerState) {
                             is LoginViewModel.RegisterState.Error -> {
                                 Text(
-                                    text = (registerState as LoginViewModel.RegisterState.Error).message,
-                                    color = MaterialTheme.colorScheme.error
+                                    text = state.message,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
                                 )
                             }
                             is LoginViewModel.RegisterState.Loading -> {
@@ -108,19 +174,43 @@ fun RegisterScreen(
                             is LoginViewModel.RegisterState.Success -> {
                                 Text(
                                     text = stringResource(R.string.registration_success),
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.bodySmall
                                 )
                             }
                             else -> {}
                         }
 
                         Button(
-                            onClick = { viewModel.register(email, password) },
+                            onClick = {
+                                if (password == confirmPassword) {
+                                    val phone = if (phoneNumber.isBlank()) null else phoneNumber.trim()
+                                    viewModel.register(email.trim(), password, phone)
+                                }
+                            },
                             modifier = Modifier.fillMaxWidth(),
-                            enabled = email.isNotEmpty() && password.isNotEmpty() &&
-                                    registerState !is LoginViewModel.RegisterState.Loading
+                            enabled = email.isNotEmpty() &&
+                                    password.isNotEmpty() &&
+                                    confirmPassword.isNotEmpty() &&
+                                    password == confirmPassword &&
+                                    !isLoading
                         ) {
-                            Text(stringResource(R.string.register))
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            } else {
+                                Text(stringResource(R.string.register))
+                            }
+                        }
+
+                        TextButton(
+                            onClick = { navController.popBackStack() },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isLoading
+                        ) {
+                            Text("Ja tinc un compte")
                         }
                     }
                 }
