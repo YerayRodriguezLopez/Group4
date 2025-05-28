@@ -1,0 +1,486 @@
+﻿@page
+@model RazorPage.Pages.CalculateEnergyModel
+@{
+	ViewData["Title"] = "List Companies";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Consumo Eléctrico</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        input[type="number"] {
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+            min-width: 200px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .recommendations {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .recommendations h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .recommendation-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .recommendation-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .recommendation-savings {
+            color: #27ae60;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Calculadora de Consumo Eléctrico</h1>
+
+        <div class="form-section">
+            <form id="electricityForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="kwh">Consumo mensual (kWh):</label>
+                        <input type="number" id="kwh" step="0.1" min="0" required placeholder="Ej: 350">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Precio por kWh (€):</label>
+                        <input type="number" id="price" step="0.001" min="0" required placeholder="Ej: 0.25" value="0.25">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="people">Número de personas en la tienda:</label>
+                        <input type="number" id="people" min="1" required placeholder="Ej: 3" value="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="size">Tamaño de la tienda (m²):</label>
+                        <input type="number" id="size" min="1" required placeholder="Ej: 80">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="heating">Calefacción eléctrica (horas/día):</label>
+                        <input type="number" id="heating" min="0" max="24" step="0.5" placeholder="Ej: 6" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ac">Aire acondicionado (horas/día):</label>
+                        <input type="number" id="ac" min="0" max="24" step="0.5" placeholder="Ej: 4" value="0">
+                    </div>
+                </div>
+
+                <button type="submit" class="calculate-btn">Calcular Consumo y Ahorro</button>
+            </form>
+        </div>
+
+        <div id="results" class="results-section">
+            <div class="results-grid">
+                <div class="result-card">
+                    <div class="result-value" id="monthlyCost">0€</div>
+                    <div class="result-label">Coste Mensual</div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-value" id="yearlyCost">0€</div>
+                    <div class="result-label">Coste Anual</div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-value" id="co2Emissions">0kg</div>
+                    <div class="result-label">CO₂ Mensual</div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-value" id="efficiency">-</div>
+                    <div class="result-label">Eficiencia</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="consumptionChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="recommendations">
+                <h3>💡 Recomendaciones para Reducir el Consumo</h3>
+                <div id="recommendationsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+
+        document.getElementById('electricityForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            calculateElectricity();
+        });
+
+        function calculateElectricity() {
+            const kwh = parseFloat(document.getElementById('kwh').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const people = parseInt(document.getElementById('people').value);
+            const size = parseFloat(document.getElementById('size').value);
+            const heating = parseFloat(document.getElementById('heating').value) || 0;
+            const ac = parseFloat(document.getElementById('ac').value) || 0;
+
+            // Cálculos básicos
+            const monthlyCost = kwh * price;
+            const yearlyCost = monthlyCost * 12;
+            const co2Emissions = kwh * 0.331; // kg CO2 por kWh en España
+
+            // Cálculo de eficiencia
+            const kwhPerPerson = kwh / people;
+            const kwhPerM2 = kwh / size;
+
+            let efficiency = 'Excelente';
+            if (kwhPerPerson > 150 || kwhPerM2 > 4) efficiency = 'Mejorable';
+            else if (kwhPerPerson > 100 || kwhPerM2 > 3) efficiency = 'Buena';
+
+            // Mostrar resultados
+            document.getElementById('monthlyCost').textContent = monthlyCost.toFixed(2) + '€';
+            document.getElementById('yearlyCost').textContent = yearlyCost.toFixed(2) + '€';
+            document.getElementById('co2Emissions').textContent = co2Emissions.toFixed(1) + 'kg';
+            document.getElementById('efficiency').textContent = efficiency;
+
+            // Crear gráfico
+            createChart(kwh, monthlyCost, co2Emissions);
+
+            // Generar recomendaciones
+            generateRecommendations(kwh, kwhPerPerson, kwhPerM2, heating, ac, price);
+
+            // Mostrar sección de resultados
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function createChart(kwh, cost, co2) {
+            const ctx = document.getElementById('consumptionChart').getContext('2d');
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            // Calcular proyecciones con ahorros
+            const scenarios = {
+                actual: { kwh: kwh, cost: cost, co2: co2 },
+                led: { kwh: kwh * 0.9, cost: cost * 0.9, co2: co2 * 0.9 },
+                eficiencia: { kwh: kwh * 0.8, cost: cost * 0.8, co2: co2 * 0.8 },
+                renovables: { kwh: kwh * 0.7, cost: cost * 0.6, co2: co2 * 0.3 }
+            };
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Consumo Actual', 'Con LED', 'Electrodomésticos Eficientes', 'Con Renovables'],
+                    datasets: [
+                        {
+                            label: 'Coste Mensual (€)',
+                            data: [scenarios.actual.cost, scenarios.led.cost, scenarios.eficiencia.cost, scenarios.renovables.cost],
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            borderColor: '#667eea',
+                            borderWidth: 2,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Emisiones CO₂ (kg)',
+                            data: [scenarios.actual.co2, scenarios.led.co2, scenarios.eficiencia.co2, scenarios.renovables.co2],
+                            backgroundColor: 'rgba(118, 75, 162, 0.8)',
+                            borderColor: '#764ba2',
+                            borderWidth: 2,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Escenarios de Ahorro'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Coste (€)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'CO₂ (kg)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Comparativa de Consumo y Emisiones por Escenario'
+                        },
+                        legend: {
+                            display: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateRecommendations(kwh, kwhPerPerson, kwhPerM2, heating, ac, price) {
+            const recommendations = [];
+
+            // Recomendaciones basadas en el consumo
+            if (kwhPerPerson > 120) {
+                recommendations.push({
+                    title: 'Sustituir bombillas por LED',
+                    description: 'Cambiar todas las bombillas incandescentes y halógenas por LED.',
+                    savings: '10-15% del consumo total',
+                    monthlySaving: (kwh * 0.12 * price).toFixed(2)
+                });
+            }
+
+            if (kwhPerM2 > 3.5) {
+                recommendations.push({
+                    title: 'Mejorar aislamiento térmico',
+                    description: 'Instalar mejor aislamiento en ventanas y paredes.',
+                    savings: '15-25% en calefacción/refrigeración',
+                    monthlySaving: (kwh * 0.2 * price).toFixed(2)
+                });
+            }
+
+            if (heating > 4) {
+                recommendations.push({
+                    title: 'Optimizar calefacción',
+                    description: 'Reducir temperatura a 19-20°C y usar programador.',
+                    savings: '20-30% en calefacción',
+                    monthlySaving: (kwh * 0.25 * price).toFixed(2)
+                });
+            }
+
+            if (ac > 3) {
+                recommendations.push({
+                    title: 'Uso eficiente del aire acondicionado',
+                    description: 'Mantener temperatura a 24-26°C y usar temporizador.',
+                    savings: '15-20% en refrigeración',
+                    monthlySaving: (kwh * 0.18 * price).toFixed(2)
+                });
+            }
+
+            // Recomendaciones generales
+            recommendations.push({
+                title: 'Electrodomésticos eficientes',
+                description: 'Sustituir electrodomésticos clase A+++ al renovar.',
+                savings: '10-20% del consumo',
+                monthlySaving: (kwh * 0.15 * price).toFixed(2)
+            });
+
+            recommendations.push({
+                title: 'Instalación solar fotovoltaica',
+                description: 'Considerar paneles solares para autoconsumo.',
+                savings: '30-50% de la factura',
+                monthlySaving: (kwh * price * 0.4).toFixed(2)
+            });
+
+            recommendations.push({
+                title: 'Desconectar dispositivos en standby',
+                description: 'Usar regletas con interruptor y desconectar cargadores.',
+                savings: '5-10% del consumo',
+                monthlySaving: (kwh * 0.08 * price).toFixed(2)
+            });
+
+            // Renderizar recomendaciones
+            const container = document.getElementById('recommendationsList');
+            container.innerHTML = '';
+
+            recommendations.forEach(rec => {
+                const item = document.createElement('div');
+                item.className = 'recommendation-item';
+                item.innerHTML = `
+                    <div class="recommendation-title">${rec.title}</div>
+                    <div>${rec.description}</div>
+                    <div class="recommendation-savings">Ahorro potencial: ${rec.savings} (≈${rec.monthlySaving}€/mes)</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+    </script>
+</body>
+</html>
