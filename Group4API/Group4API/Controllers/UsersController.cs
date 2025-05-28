@@ -100,8 +100,9 @@ namespace Group4API.Controllers
 
             var user = new User
             {
-                UserName = model.Email,
-                Email = model.Email
+                UserName = model.UserName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -137,7 +138,8 @@ namespace Group4API.Controllers
             if (!string.IsNullOrEmpty(model.Email))
             {
                 user.Email = model.Email;
-                user.UserName = model.Email; // In this case username = email
+                user.UserName = model.UserName; // In this case username = email
+                user.PhoneNumber = model.PhoneNumber; // Assuming PhoneNumber is a string in User model
             }
 
             if (!string.IsNullOrEmpty(model.CurrentPassword) && !string.IsNullOrEmpty(model.NewPassword))
@@ -192,6 +194,21 @@ namespace Group4API.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpPost("{email},{password}")]
+        public async Task<ActionResult<User>> GetLogin(string email, string password)
+        {
+            var user = await _context.Users
+                .Include(u => u.Rates)
+                .FirstOrDefaultAsync(u => u.Email == email && u.PasswordHash == password);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return user;
         }
     }
 }

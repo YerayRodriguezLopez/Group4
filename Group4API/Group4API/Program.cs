@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Models;
 using Group4API.Model;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace Group4API
 {
@@ -14,7 +15,14 @@ namespace Group4API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.  
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    // Handle circular references
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    // Optional: Write indented JSON for better readability
+                    options.JsonSerializerOptions.WriteIndented = true;
+                });
 
             // Add database context
             builder.Services.AddDbContext<Group4DbContext>(options =>
@@ -30,7 +38,7 @@ namespace Group4API
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequiredLength = 6;
             })
-                .AddEntityFrameworkStores<Group4DbContext>() // Ensure the correct namespace is included
+                .AddEntityFrameworkStores<Group4DbContext>()
                 .AddDefaultTokenProviders();
 
             // Add Swagger services  

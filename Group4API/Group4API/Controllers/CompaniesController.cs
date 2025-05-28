@@ -29,12 +29,27 @@ namespace Group4API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
+        public async Task<ActionResult<IEnumerable<object>>> GetCompanies()
         {
-            return await _context.Companies
+            var companies = await _context.Companies
                 .Include(c => c.Address)
-                .Include(c => c.Rates)
+                .Select(c => new {
+                    c.Id,
+                    c.NIF,
+                    c.Name,
+                    c.Mail,
+                    c.Phone,
+                    c.Tags,
+                    c.Score,
+                    c.IsProvider,
+                    c.IsRetail,
+                    Address = c.Address,
+                    RatingsCount = c.Rates.Count(),
+                    AverageRating = c.Rates.Any() ? c.Rates.Average(r => r.Score) : 0
+                })
                 .ToListAsync();
+
+            return Ok(companies);
         }
 
         // GET: api/Companies/5
@@ -44,21 +59,45 @@ namespace Group4API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Company>> GetCompany(int id)
+        public async Task<ActionResult<object>> GetCompany(int id)
         {
             var company = await _context.Companies
                 .Include(c => c.Address)
-                .Include(c => c.Rates)
                 .Include(c => c.CompanyProviders)
                     .ThenInclude(cp => cp.Provider)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                        .ThenInclude(p => p.Address)
+                .Where(c => c.Id == id)
+                .Select(c => new {
+                    c.Id,
+                    c.NIF,
+                    c.Name,
+                    c.Mail,
+                    c.Phone,
+                    c.Tags,
+                    c.Score,
+                    c.IsProvider,
+                    c.IsRetail,
+                    Address = c.Address,
+                    RatingsCount = c.Rates.Count(),
+                    AverageRating = c.Rates.Any() ? c.Rates.Average(r => r.Score) : 0,
+                    Providers = c.CompanyProviders.Select(cp => new {
+                        cp.Provider.Id,
+                        cp.Provider.Name,
+                        cp.Provider.Mail,
+                        cp.Provider.Phone,
+                        cp.Provider.Tags,
+                        cp.Provider.Score,
+                        Address = cp.Provider.Address
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
 
             if (company == null)
             {
                 return NotFound();
             }
 
-            return company;
+            return Ok(company);
         }
 
         // GET: api/Companies/providers
@@ -67,13 +106,29 @@ namespace Group4API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("providers")]
-        public async Task<ActionResult<IEnumerable<Company>>> GetProviders()
+        public async Task<ActionResult<IEnumerable<object>>> GetProviders()
         {
-            return await _context.Companies
+            var providers = await _context.Companies
                 .Where(c => c.IsProvider)
                 .Include(c => c.Address)
-                .Include(c => c.Rates)
+                .Select(c => new {
+                    c.Id,
+                    c.NIF,
+                    c.Name,
+                    c.Mail,
+                    c.Phone,
+                    c.Tags,
+                    c.Score,
+                    c.IsProvider,
+                    c.IsRetail,
+                    Address = c.Address,
+                    RatingsCount = c.Rates.Count(),
+                    AverageRating = c.Rates.Any() ? c.Rates.Average(r => r.Score) : 0,
+                    ClientsCount = c.ProvidedCompanies.Count()
+                })
                 .ToListAsync();
+
+            return Ok(providers);
         }
 
         // GET: api/Companies/5/providers
@@ -83,11 +138,12 @@ namespace Group4API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}/providers")]
-        public async Task<ActionResult<IEnumerable<Company>>> GetCompanyProviders(int id)
+        public async Task<ActionResult<IEnumerable<object>>> GetCompanyProviders(int id)
         {
             var company = await _context.Companies
                 .Include(c => c.CompanyProviders)
                     .ThenInclude(cp => cp.Provider)
+                        .ThenInclude(p => p.Address)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (company == null)
@@ -95,8 +151,20 @@ namespace Group4API.Controllers
                 return NotFound();
             }
 
-            var providers = company.CompanyProviders.Select(cp => cp.Provider).ToList();
-            return providers;
+            var providers = company.CompanyProviders.Select(cp => new {
+                cp.Provider.Id,
+                cp.Provider.NIF,
+                cp.Provider.Name,
+                cp.Provider.Mail,
+                cp.Provider.Phone,
+                cp.Provider.Tags,
+                cp.Provider.Score,
+                cp.Provider.IsProvider,
+                cp.Provider.IsRetail,
+                Address = cp.Provider.Address
+            }).ToList();
+
+            return Ok(providers);
         }
 
         // GET: api/Companies/5/clients
@@ -106,11 +174,12 @@ namespace Group4API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}/clients")]
-        public async Task<ActionResult<IEnumerable<Company>>> GetProviderClients(int id)
+        public async Task<ActionResult<IEnumerable<object>>> GetProviderClients(int id)
         {
             var company = await _context.Companies
                 .Include(c => c.ProvidedCompanies)
                     .ThenInclude(cp => cp.Company)
+                        .ThenInclude(c => c.Address)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (company == null)
@@ -123,8 +192,48 @@ namespace Group4API.Controllers
                 return BadRequest("The specified company is not a provider");
             }
 
-            var clients = company.ProvidedCompanies.Select(cp => cp.Company).ToList();
-            return clients;
+            var clients = company.ProvidedCompanies.Select(cp => new {
+                cp.Company.Id,
+                cp.Company.NIF,
+                cp.Company.Name,
+                cp.Company.Mail,
+                cp.Company.Phone,
+                cp.Company.Tags,
+                cp.Company.Score,
+                cp.Company.IsProvider,
+                cp.Company.IsRetail,
+                Address = cp.Company.Address
+            }).ToList();
+
+            return Ok(clients);
+        }
+
+        // GET: api/Companies/5/ratings
+        /// <summary>
+        /// Retrieves all ratings for a specific company.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("{id}/ratings")]
+        public async Task<ActionResult<IEnumerable<object>>> GetCompanyRatings(int id)
+        {
+            var companyExists = await _context.Companies.AnyAsync(c => c.Id == id);
+            if (!companyExists)
+            {
+                return NotFound();
+            }
+
+            var ratings = await _context.Rates
+                .Where(r => r.CompanyId == id)
+                .Include(r => r.User)
+                .Select(r => new {
+                    r.Id,
+                    r.Score,
+                    UserEmail = r.User.Email
+                })
+                .ToListAsync();
+
+            return Ok(ratings);
         }
 
         // POST: api/Companies
