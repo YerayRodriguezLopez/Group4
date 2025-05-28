@@ -7,6 +7,17 @@ namespace RazorPage.Pages
 {
     public class MapPageModel : PageModel
     {
+        public int TotalCompanies { get; set; }
+        public int ProvidersCount { get; set; }
+        public int NonProvidersCount { get; set; }
+        public int RetailCount { get; set; }
+        public int NonRetailCount { get; set; }
+        public int OnlyProviderCount { get; set; }
+        public int OnlyRetailCount { get; set; }
+        public int BothCount { get; set; }
+        public int NeitherCount { get; set; }
+
+
         public readonly AddressTools _addressTools;
         private readonly CompanyTools _companyTools;
 
@@ -23,7 +34,24 @@ namespace RazorPage.Pages
         {
             Addresses = await _addressTools.GetAddressAsync();
             Companies = await _companyTools.GetCompanyAsync();
+            CalculateStatistics(Companies);
             return Page();
+        }
+        private void CalculateStatistics(List<Company> companies)
+        {
+            TotalCompanies = companies.Count;
+
+            // Contar por cada atributo individual
+            ProvidersCount = companies.Count(c => c.IsProvider);
+            NonProvidersCount = companies.Count(c => !c.IsProvider);
+            RetailCount = companies.Count(c => c.isRetail);
+            NonRetailCount = companies.Count(c => !c.isRetail);
+
+            // Contar combinaciones
+            OnlyProviderCount = companies.Count(c => c.IsProvider && !c.isRetail);
+            OnlyRetailCount = companies.Count(c => !c.IsProvider && c.isRetail);
+            BothCount = companies.Count(c => c.IsProvider && c.isRetail);
+            NeitherCount = companies.Count(c => !c.IsProvider && !c.isRetail);
         }
     }
 }
