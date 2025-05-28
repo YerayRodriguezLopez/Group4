@@ -38,7 +38,11 @@ fun AppNavigation(
         composable(Screen.Map.route) {
             MapScreen(
                 navController = navController,
-                viewModel = mapViewModel
+                viewModel = mapViewModel,
+                onCompanySelected = { company ->
+                    companyDetailsViewModel.selectCompany(company)
+                    navController.navigate(Screen.CompanyDetails.createRoute(company.id.toString()))
+                }
             )
         }
 

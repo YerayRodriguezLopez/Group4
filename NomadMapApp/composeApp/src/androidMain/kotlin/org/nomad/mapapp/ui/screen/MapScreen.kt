@@ -7,8 +7,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
@@ -33,6 +31,7 @@ import com.google.maps.android.compose.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import org.nomad.mapapp.R
+import org.nomad.mapapp.data.model.Company
 import org.nomad.mapapp.data.model.CompanyClusterItem
 import org.nomad.mapapp.ui.component.FilterDialog
 import org.nomad.mapapp.ui.component.MapBottomBar
@@ -44,7 +43,8 @@ import org.nomad.mapapp.ui.viewmodel.MapViewModel
 @Composable
 fun MapScreen(
     navController: NavController,
-    viewModel: MapViewModel
+    viewModel: MapViewModel,
+    onCompanySelected: (Company) -> Unit
 ) {
     val context = LocalContext.current
     val companies by viewModel.companies.collectAsState()
@@ -89,12 +89,6 @@ fun MapScreen(
     LaunchedEffect(Unit) {
         // Fetch companies when the screen is first displayed
         viewModel.loadCompanies()
-    }
-
-    LazyColumn {
-        items(companies) { company ->
-            Text(company.name)
-        }
     }
 
     // Location permission launcher
@@ -199,7 +193,7 @@ fun MapScreen(
                         snippet = clusterItem.snippet,
                         icon = BitmapDescriptorFactory.defaultMarker(markerColor),
                         onClick = {
-                            navController.navigate(Screen.CompanyDetails.createRoute(company.id.toString()))
+                            onCompanySelected(company)
                             true
                         }
                     )
