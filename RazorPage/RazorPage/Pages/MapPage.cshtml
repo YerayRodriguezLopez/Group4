@@ -49,6 +49,164 @@
     <h3>Maps with the companies</h3>
     <p>Click on the markers to go see the details!!</p>
     <div id="map"></div>
+    <div class="container mt-4">
+    <h2 class="mb-4">Stores by Type (Retail or Provider)</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Provider</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="providerChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Retail</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="retailChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Combination of atributes</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="combinedChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Stadistic summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-primary">@Model.TotalCompanies</h4>
+                                <p>Total Stores</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-success">@Model.ProvidersCount</h4>
+                                <p>Providers</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-info">@Model.RetailCount</h4>
+                                <p>Retails</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-warning">@Model.BothCount</h4>
+                                <p>Both</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    @section Scripts {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+        <script>
+            // Gráfico IsProvider
+            const providerCtx = document.getElementById('providerChart').getContext('2d');
+            new Chart(providerCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Es Proveedor', 'No es Proveedor'],
+                    datasets: [{
+                        data: [@Model.ProvidersCount, @Model.NonProvidersCount],
+                        backgroundColor: ['#28a745', '#dc3545'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Gráfico IsRetail
+            const retailCtx = document.getElementById('retailChart').getContext('2d');
+            new Chart(retailCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Es Retail', 'No es Retail'],
+                    datasets: [{
+                        data: [@Model.RetailCount, @Model.NonRetailCount],
+                        backgroundColor: ['#17a2b8', '#ffc107'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Gráfico Combinado
+            const combinedCtx = document.getElementById('combinedChart').getContext('2d');
+            new Chart(combinedCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Solo Proveedor', 'Solo Retail', 'Ambos', 'Ninguno'],
+                    datasets: [{
+                        label: 'Número de Tiendas',
+                        data: [@Model.OnlyProviderCount, @Model.OnlyRetailCount, @Model.BothCount, @Model.NeitherCount],
+                        backgroundColor: ['#28a745', '#17a2b8', '#fd7e14', '#6c757d'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        </script>
+    }
     <script>
       // Function that starts the map using new Google Maps API
       async function initMap() {
