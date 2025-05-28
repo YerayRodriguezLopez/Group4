@@ -7,45 +7,39 @@
   <head>
     <title>Map with markers</title>
     <meta charset="utf-8" />
-    <style>
-      #map {
-        height: 500px;
-        width: 100%;
-      }
-      
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f4f8; 
-        margin: 0;
-        padding: 0;
-    }
+   <style>
+  #map {
+    height: 500px;
+    width: 100%;
+  }
 
-    .container {
-        width: 80%;
-        margin: auto;
-        overflow: hidden;
-    }
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f4f8;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
-    header {
-        background-color: #333;
-        color: white;
-        padding: 20px 0;
-        text-align: center;
-    }
+  .container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+    flex: 1;
+  }
 
-    
-
-    footer {
-        background-color: #333;
-        color: white;
-        text-align: center;
-        padding: 15px;
-        margin-top: 20px;
-    }
-    
-    </style>
-  </head>
+  header {
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+  }
+</style>
+</head>
   <body>
+      <main class="container">
     <h3>Maps with the companies</h3>
     <p>Click on the markers to go see the details!!</p>
     <div id="map"></div>
@@ -127,6 +121,7 @@
         </div>
     </div>
 </div>
+</main>
 
     @section Scripts {
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -136,7 +131,7 @@
             new Chart(providerCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Es Proveedor', 'No es Proveedor'],
+                    labels: ['Is provider', 'Is not provider'],
                     datasets: [{
                         data: [@Model.ProvidersCount, @Model.NonProvidersCount],
                         backgroundColor: ['#28a745', '#dc3545'],
@@ -158,7 +153,7 @@
             new Chart(retailCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Es Retail', 'No es Retail'],
+                    labels: ['Is Retail', 'Is not Retail'],
                     datasets: [{
                         data: [@Model.RetailCount, @Model.NonRetailCount],
                         backgroundColor: ['#17a2b8', '#ffc107'],
@@ -180,7 +175,7 @@
             new Chart(combinedCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Solo Proveedor', 'Solo Retail', 'Ambos', 'Ninguno'],
+                    labels: ['Only Provider', 'Only Retail', 'Both', 'None'],
                     datasets: [{
                         label: 'Número de Tiendas',
                         data: [@Model.OnlyProviderCount, @Model.OnlyRetailCount, @Model.BothCount, @Model.NeitherCount],
