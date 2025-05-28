@@ -1,50 +1,55 @@
 ﻿@page
 @model RazorPage.Pages.ListShopsPageModel
 @{
-    ViewData["Title"] = "List Companies";
+    ViewData["Title"] = "List Companies"; // Set the page title
 }
+
+<!-- Basic styling for the page layout and visual structure -->
 <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f4f8; 
-            margin: 0;
-            padding: 0;
-        }
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f4f8; 
+        margin: 0;
+        padding: 0;
+    }
 
-        .container {
-            width: 80%;
-            margin: auto;
-            overflow: hidden;
-        }
+    .container {
+        width: 80%;
+        margin: auto;
+        overflow: hidden;
+    }
 
-        header {
-            background-color: #333;
-            color: white;
-            padding: 20px 0;
-            text-align: center;
-        }
+    header {
+        background-color: #333;
+        color: white;
+        padding: 20px 0;
+        text-align: center;
+    }
 
-        h1 {
-            margin: 0;
-            font-size: 2.5em;
-        }
+    h1 {
+        margin: 0;
+        font-size: 2.5em;
+    }
 
+    footer {
+        background-color: #333;
+        color: white;
+        text-align: center;
+        padding: 15px;
+        margin-top: 20px;
+    }
+</style>
 
-        footer {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 15px;
-            margin-top: 20px;
-        }
-    </style>
+<!-- Main content section -->
 <div>
+    @* Check if there are any companies and addresses to display *@
     @if (!Model.Addresses.Any() || !Model.Companies.Any())
     {
-            <p>No companies found.</p>
+            <p>No companies found.</p> <!-- Message shown when no data exists -->
     }
     else
     {
+            <!-- Table for displaying company information and related addresses -->
             <table class="table">
                 <thead>
                     <tr>
@@ -57,26 +62,30 @@
                     </tr>
                 </thead>
                 <tbody>
+                @* Loop through all addresses *@
                 @foreach (var address in Model.Addresses)
                 {
+                    @* Loop through all companies *@
                     @foreach (var company in Model.Companies)
                     {
+                        @* Match company with its address using CompanyId *@
                         @if (address.CompanyId == company.Id)
                         {
-                                            <tr>
-                                                <td>@company.Name</td>
-                                                <td>@company.Mail</td>
-                                                <td>@company.Phone</td>
-                                                <td>@company.Score</td>
-                                                <td>@address.Location</td>
-                                                <td>
-                                                    <button type="button" 
-                                                            class="btn btn-primary" 
-                                                            onclick="openGoogleMaps('@address.Location')">
-                                                        GoogleMaps
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                        <tr>
+                                            <td>@company.Name</td>
+                                            <td>@company.Mail</td>
+                                            <td>@company.Phone</td>
+                                            <td>@company.Score</td>
+                                            <td>@address.Location</td>
+                                            <td>
+                                                <!-- Button that opens Google Maps for the company location -->
+                                                <button type="button" 
+                                                        class="btn btn-primary" 
+                                                        onclick="openGoogleMaps('@address.Location')">
+                                                    GoogleMaps
+                                                </button>
+                                            </td>
+                                        </tr>
                         }
                     }
                 }
@@ -85,11 +94,12 @@
     }
 </div>
 
+<!-- JavaScript function to open Google Maps in a new tab -->
 <script>
 function openGoogleMaps(location) {
-    // Crear URL para Google Maps usando la dirección como destino
+    // Create Google Maps URL with the specified location
     const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
-    // Abrir en nueva pestaña
+    // Open the URL in a new browser tab
     window.open(googleMapsUrl, '_blank');
 }
 </script>
