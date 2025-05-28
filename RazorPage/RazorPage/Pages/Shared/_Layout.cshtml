@@ -31,31 +31,6 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Contact">Contact</a>
                         </li>
-                        @if (User.Identity?.IsAuthenticated ?? false)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-page="/Profile">
-                                    <i class="bi bi-person-circle"></i> My Profile
-                                </a>
-                            </li>
-                            <li class="nav-item d-flex align-items-center">
-                                <span class="nav-link px-2">Hello, @User.Identity.Name!</span>
-                                <form method="post" asp-page="/Logout" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-light">
-                                        Logout
-                                    </button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-page="/Register">Register</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-page="/Login">Login</a>
-                            </li>
-                        }
                     </ul>
                 </div>
             </div>

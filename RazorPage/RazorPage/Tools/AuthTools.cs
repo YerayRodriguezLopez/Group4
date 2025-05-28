@@ -36,7 +36,7 @@ namespace RazorPage.Tools
                 Encoding.UTF8,
                 "application/json");
 
-            var response = await _httpClient.PostAsync($"/api/Users/{apiRequest.Email}, {apiRequest.Password}", content);
+            var response = await _httpClient.PostAsync($"/api/Users", content);
             var body = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

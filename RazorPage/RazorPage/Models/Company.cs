@@ -10,6 +10,11 @@
         public string Tags { get; set; }
         public float Score { get; set; }
         public string Retail { get; set; }
-        public string Provider { get; set; }
+        public bool IsProvider { get; set; }
+        public bool isRetail { get; set; }
+        public Address Address { get; set; }
+        public int RatingCounts { get; set; }
+        public double AverageRating { get; set; }
+
     }
 }

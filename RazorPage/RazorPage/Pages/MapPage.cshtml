@@ -12,10 +12,42 @@
         height: 500px;
         width: 100%;
       }
+      
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f4f8; 
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        width: 80%;
+        margin: auto;
+        overflow: hidden;
+    }
+
+    header {
+        background-color: #333;
+        color: white;
+        padding: 20px 0;
+        text-align: center;
+    }
+
+    
+
+    footer {
+        background-color: #333;
+        color: white;
+        text-align: center;
+        padding: 15px;
+        margin-top: 20px;
+    }
+    
     </style>
   </head>
   <body>
     <h3>Maps with the companies</h3>
+    <p>Click on the markers to go see the details!!</p>
     <div id="map"></div>
     <script>
       // Function that starts the map using new Google Maps API
@@ -37,7 +69,7 @@
         {
             <text>
                           // Usar Html.Raw con JsonSerializer y escapar correctamente
-                          const direccionesJson = @Html.Raw(Json.Serialize(Model.Addresses.Select(a => new { lat = (double)a.Lat, lng = (double)a.Lng, location = a.Location })));
+                          const direccionesJson = @Html.Raw(Json.Serialize(Model.Addresses.Select(a => new { lat = (double)a.Lat, lng = (double)a.Lng, location = a.Location, companyId = a.CompanyId })));
                           const direcciones = direccionesJson;
                           console.log("Direcciones cargadas:", direcciones);
                           // Recorrer las direcciones y crear marcadores
@@ -51,11 +83,9 @@
 
                             // Agregar click listener para abrir Google Maps
                             marcador.addListener('click', function() {
-                              // Crear URL para Google Maps con las coordenadas
-                              const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${direccion.lat},${direccion.lng}`;
-                              // Abrir en nueva pestaña
-                              window.open(googleMapsUrl, '_blank');
-                            });
+                            // Crear URL para Google Maps con las coordenadas
+                            window.open(`/DetailCompany?id=${direccion.companyId}`, '_self');
+                                });
                           });
                           console.log("Todos los marcadores creados");
             </text>
@@ -69,12 +99,6 @@
                             position: ubicacion,
                             map: mapa,
                             title: "Barcelona - Sin datos"
-                          });
-
-                          // Agregar click listener para el marcador de ejemplo
-                          marcadorEjemplo.addListener('click', function() {
-                            const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${ubicacion.lat},${ubicacion.lng}`;
-                            window.open(googleMapsUrl, '_blank');
                           });
             </text>
         }
