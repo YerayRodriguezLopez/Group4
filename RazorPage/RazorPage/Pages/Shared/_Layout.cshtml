@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using System.Text.Json
+@{
+    var userJson = Context.Session.GetString("UserData");
+    var loggedUser = !string.IsNullOrEmpty(userJson) ? JsonSerializer.Deserialize<RazorPage.Models.User>(userJson) : null;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -34,6 +39,22 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/CalculateEnergy">Calculate Energy</a>
                         </li>
+                        @if (loggedUser != null)
+                        {
+							<li class="nav-item">
+                                <span>Welcome, @loggedUser.Email!</span>
+							</li>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Logout">Logout</a>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Login">Login</a>
+							</li>
+							<li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Register">Register</a>
+							</li>
+                        }
                     </ul>
                 </div>
             </div>

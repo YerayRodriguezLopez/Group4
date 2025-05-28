@@ -26,7 +26,7 @@ namespace RazorPage.Tools
         /// </summary>
         /// <param name="loginModel">User credentials for login.</param>
         /// <returns>Tuple indicating success status and message.</returns>
-        public async Task<(bool Success, string Message)> Login(LoginUser loginModel)
+        public async Task<(bool Success, string Message)> Login(User loginModel)
         {
             // Prepare the API request payload with user login data
             var apiRequest = new LoginUserDTO

@@ -1,50 +1,66 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorPage.Models;
-using RazorPage.Tools;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
-namespace RazorPage.Pages
+namespace RazorPage.Pages;
+
+public class LoginModel : PageModel
 {
-    public class LoginModel : PageModel
+    private readonly IHttpClientFactory _clientFactory;
+
+    public LoginModel(IHttpClientFactory clientFactory)
     {
-        private readonly AuthTools _authTools;
+        _clientFactory = clientFactory;
+    }
 
-        public LoginModel(AuthTools authTools)
+    [BindProperty]
+    public string Email { get; set; }
+
+    [BindProperty]
+    public string Password { get; set; }
+
+    public string ErrorMessage { get; set; }
+
+    public async Task<IActionResult> OnPostAsync()
+    {
+        var client = _clientFactory.CreateClient();
+        string encryptedPassword = EncryptPassword(Password);
+        string url = $"http://group4apiapi.azure-api.net/api/User/{Email},{encryptedPassword}";
+
+        try
         {
-            _authTools = authTools;
-        }
-
-        [BindProperty]
-        public LoginUser User { get; set; }
-
-        [TempData]
-        public string ErrorMessage { get; set; }
-
-        public void OnGet()
-        {
-            TempData.Clear();
-        }
-
-        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
-        {
-            returnUrl ??= Url.Content("~/");
-
-            if (!ModelState.IsValid)
+            var response = await client.PostAsync(url, null);
+            if (response.IsSuccessStatusCode)
             {
+                var json = await response.Content.ReadAsStringAsync();
+                var user = JsonSerializer.Deserialize<User>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                HttpContext.Session.SetString("UserData", JsonSerializer.Serialize(user));
+                return RedirectToPage("/Map");
+            }
+            else
+            {
+                ErrorMessage = "Invalid login.";
                 return Page();
             }
-                
-
-            var result = await _authTools.Login(User);
-
-            if (!result.Success)
-            {
-                ModelState.AddModelError(string.Empty, result.Message);
-                return Page();
-            }
-
-            TempData["SuccessMessage"] = "Login successful! Redirecting...";
+        }
+        catch
+        {
+            ErrorMessage = "API connection failed.";
             return Page();
+        }
+    }
+
+    private string EncryptPassword(string password)
+    {
+        using (SHA256 sha256 = SHA256.Create())
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(password);
+            byte[] hash = sha256.ComputeHash(bytes);
+            return Convert.ToHexString(hash);
         }
     }
 }

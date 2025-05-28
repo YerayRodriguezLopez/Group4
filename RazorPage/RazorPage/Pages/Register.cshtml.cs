@@ -1,62 +1,72 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using RazorPage.DTO;
 using RazorPage.Models;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
-namespace RazorPage.Pages
+namespace RazorPage.Pages;
+
+public class RegisterModel : PageModel
 {
-    public class RegisterModel : PageModel
+    private readonly IHttpClientFactory _clientFactory;
+
+    public RegisterModel(IHttpClientFactory clientFactory)
     {
-        private readonly IConfiguration _configuration;
-        private readonly HttpClient _httpClient;
-        public RegisterModel(IConfiguration configuration, HttpClient httpClient)
+        _clientFactory = clientFactory;
+    }
+
+    [BindProperty]
+    public string Email { get; set; }
+
+    [BindProperty]
+    public string Password { get; set; }
+
+    public string ErrorMessage { get; set; }
+
+    public async Task<IActionResult> OnPostAsync()
+    {
+        var client = _clientFactory.CreateClient();
+        string encryptedPassword = EncryptPassword(Password);
+
+        var newUser = new User
         {
-            _configuration = configuration;
-            _httpClient = httpClient;
-        }
+            Email = Email,
+            Password = encryptedPassword,
+            Rates = new List<Rate>()
+        };
 
-        [BindProperty]
-        public RegisterUser User { get; set; }
+        var json = JsonSerializer.Serialize(newUser);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        public string ApiErrorMessage { get; set; }
-
-        public void OnGet()
+        try
         {
-        }
+            var response = await client.PostAsync("http://group4apiapi.azure-api.net/api/User", content);
 
-        public async Task<IActionResult> OnPost()
-        {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
-            // Map User to RegisterUserDTO to avoid sending ConfirmedPassword
-            var registerUserDto = new RegisterUserDTO
-            {
-                Email = User.Email,
-                UserName = User.UserName,
-                Password = User.Password,
-                PhoneNumber = User.PhoneNumber,
-            };
-
-            _httpClient.BaseAddress = new Uri(_configuration["ApiBaseUrl"]);
-
-            var response = await _httpClient.PostAsJsonAsync("api/Users", registerUserDto);
             if (response.IsSuccessStatusCode)
             {
-                TempData["SuccessMessage"] = "Registration successful! Redirecting to log in...";
-                TempData["RegisterSuccess"] = true;
-                return Page();
+                return RedirectToPage("/Login");
             }
             else
             {
-                string responseBody = await response.Content.ReadAsStringAsync();
-                ApiErrorMessage = $"Error creating account: ({response.StatusCode}): {responseBody}";
-
-                ModelState.AddModelError(string.Empty, ApiErrorMessage);
+                ErrorMessage = "Registration failed. Email may already be in use.";
                 return Page();
             }
+        }
+        catch
+        {
+            ErrorMessage = "Could not connect to API.";
+            return Page();
+        }
+    }
+
+    private string EncryptPassword(string password)
+    {
+        using (SHA256 sha256 = SHA256.Create())
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(password);
+            byte[] hash = sha256.ComputeHash(bytes);
+            return Convert.ToHexString(hash);
         }
     }
 }

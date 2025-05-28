@@ -29,6 +29,7 @@ namespace RazorPage
                 client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]);
             })
                 .AddHttpMessageHandler<AuthDelTools>();
+            builder.Services.AddSession();
 
             builder.Services.AddScoped<AddressTools>();
             builder.Services.AddScoped<CompanyTools>();
@@ -77,6 +78,7 @@ namespace RazorPage
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseSession();
 
             app.UseAuthentication();
             app.UseAuthorization();

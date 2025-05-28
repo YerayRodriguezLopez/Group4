@@ -1,45 +1,11 @@
 ﻿@page
 @model RazorPage.Pages.LoginModel
 @{
-	ViewData["Title"] = "Login";
+    ViewData["Title"] = "Login";
 }
-
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-    @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-
-    <script>
-        setTimeout(() => {
-            window.location.href = '@Url.Content("~/")';
-        }, 2000);
-    </script>
-}
-
-<form method="post" novalidate>
-    <div asp-validation-summary="All" class="text-danger mb-3"></div>
-
-    <div class="form-floating mb-3">
-        <input asp-for="User.Email" class="form-control" placeholder="Email address" />
-        <label for="User_Email">Email address</label>
-        <span asp-validation-for="User.Email" class="text-danger small"></span>
-    </div>
-
-    <div class="form-floating mb-3">
-        <input asp-for="User.Password" type="password" class="form-control" placeholder="Password" />
-        <label for="User.Password">Password</label>
-        <span asp-validation-for="User.Password" class="text-danger small"></span>
-    </div>
-
-    <div class="form-check mb-3">
-        <input asp-for="User.RememberMe" class="form-check-input" />
-        <label class="form-check-label" for="User_RememberMe">Remember me</label>
-    </div>
-
-    <div class="d-grid">
-        <button type="submit" class="btn btn-primary btn-lg rounded-pill">Log in</button>
-    </div>
+<form method="post">
+    <input type="email" name="Email" placeholder="Email" required />
+    <input type="password" name="Password" placeholder="Password" required />
+    <button type="submit">Login</button>
 </form>
+<p style="color:red">@Model.ErrorMessage</p>
