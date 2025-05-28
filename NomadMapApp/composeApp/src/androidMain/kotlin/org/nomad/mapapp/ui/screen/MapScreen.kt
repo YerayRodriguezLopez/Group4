@@ -2,10 +2,13 @@ package org.nomad.mapapp.ui.screen
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
@@ -33,21 +36,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import org.nomad.mapapp.R
 import org.nomad.mapapp.data.model.Company
+import org.nomad.mapapp.data.model.CompanyClusterItem
 import org.nomad.mapapp.ui.component.FilterDialog
 import org.nomad.mapapp.ui.component.MapBottomBar
 import org.nomad.mapapp.ui.navigation.Screen
 import org.nomad.mapapp.ui.theme.MapMarkerColors
 import org.nomad.mapapp.ui.viewmodel.MapViewModel
-
-class CompanyClusterItem(
-    val company: Company,
-    private val position: LatLng = company.address?.toLatLng() ?: LatLng(0.0, 0.0)
-) : ClusterItem {
-    override fun getPosition(): LatLng = position
-    override fun getTitle(): String = company.name
-    override fun getSnippet(): String = "${company.address?.location ?: ""} - ★ ${company.getDisplayScore()}"
-    override fun getZIndex(): Float = 0f
-}
 
 @OptIn(ExperimentalMaterial3Api::class, MapsComposeExperimentalApi::class)
 @Composable
@@ -93,6 +87,17 @@ fun MapScreen(
 
     LaunchedEffect(Unit) {
         viewModel.updateSelectedTags(emptySet())
+    }
+
+    LaunchedEffect(Unit) {
+        // Fetch companies when the screen is first displayed
+        viewModel.loadCompanies()
+    }
+
+    LazyColumn {
+        items(companies) { company ->
+            Text(company.name)
+        }
     }
 
     // Location permission launcher
@@ -154,6 +159,7 @@ fun MapScreen(
             )
         }
     ) { paddingValues ->
+        Log.d("MapScreen", "Companies:  $companies.size")
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -175,48 +181,50 @@ fun MapScreen(
 
                 println("MapScreen: Rendering ${clusterItems.size} cluster items")
 
-                if (clusterItems.isNotEmpty()) {
-                    Clustering(
-                        items = clusterItems,
-                        onClusterClick = { cluster ->
-                            scope.launch {
-                                val bounds = cluster.items.map { it.position }
-                                val boundsBuilder = com.google.android.gms.maps.model.LatLngBounds.builder()
-                                bounds.forEach { boundsBuilder.include(it) }
-                                cameraPositionState.animate(
-                                    CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100)
-                                )
-                            }
-                            true
-                        },
-                        onClusterItemClick = { clusterItem ->
-                            navController.navigate(Screen.CompanyDetails.createRoute(clusterItem.company.id.toString()))
-                            true
-                        },
-                        clusterItemContent = { clusterItem ->
-                            val company = clusterItem.company
-                            val markerColors = if (isDaltonismMode) {
-                                MapMarkerColors.daltonismColors
-                            } else {
-                                MapMarkerColors.defaultColors
-                            }
+                //TODO: throws error
+//                if (clusterItems.isNotEmpty()) {
+//                    Clustering(
+//                        items = clusterItems,
+//                        onClusterClick = { cluster ->
+//                            scope.launch {
+//                                val bounds = cluster.items.map { it.position }
+//                                val boundsBuilder = com.google.android.gms.maps.model.LatLngBounds.builder()
+//                                bounds.forEach { boundsBuilder.include(it) }
+//                                cameraPositionState.animate(
+//                                    CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100)
+//                                )
+//                            }
+//                            true
+//                        },
+//                        onClusterItemClick = { clusterItem ->
+//                            navController.navigate(Screen.CompanyDetails.createRoute(clusterItem.company.id.toString()))
+//                            true
+//                        },
+//                        clusterItemContent = { clusterItem ->
+//                            val company = clusterItem.company
+//                            val markerColors = if (isDaltonismMode) {
+//                                MapMarkerColors.daltonismColors
+//                            } else {
+//                                MapMarkerColors.defaultColors
+//                            }
+//
+//                            val markerColor = when {
+//                                company.isRetail && company.isProvider -> markerColors.both
+//                                company.isRetail -> markerColors.retail
+//                                company.isProvider -> markerColors.provider
+//                                else -> markerColors.default
+//                            }
+//
+//                            MarkerInfoWindow(
+//                                state = rememberMarkerState(position = clusterItem.position),
+//                                title = company.name,
+//                                snippet = clusterItem.snippet,
+//                                icon = BitmapDescriptorFactory.defaultMarker(markerColor)
+//                            )
+//                        }
+//                    )
+//                }
 
-                            val markerColor = when {
-                                company.isRetail && company.isProvider -> markerColors.both
-                                company.isRetail -> markerColors.retail
-                                company.isProvider -> markerColors.provider
-                                else -> markerColors.default
-                            }
-
-                            MarkerInfoWindow(
-                                state = rememberMarkerState(position = clusterItem.position),
-                                title = company.name,
-                                snippet = clusterItem.snippet,
-                                icon = BitmapDescriptorFactory.defaultMarker(markerColor)
-                            )
-                        }
-                    )
-                }
             }
 
             // Location button (top left)

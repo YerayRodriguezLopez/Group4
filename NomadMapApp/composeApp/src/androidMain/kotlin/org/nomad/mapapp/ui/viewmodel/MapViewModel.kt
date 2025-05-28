@@ -32,10 +32,11 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
     init {
         // Collect from repository StateFlows
         viewModelScope.launch {
-            repository.companies.collect {
-                _companies.value = it
-                println("MapViewModel received ${it.size} companies")
-            }
+            _companies.value = repository.fetchCompanies()
+//            repository.companies.collect {
+//                _companies.value = it
+//                println("MapViewModel received ${it.size} companies")
+//            }
         }
 
         viewModelScope.launch {
@@ -50,13 +51,10 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
             }
         }
 
-        // Load initial companies
-        loadInitialCompanies()
     }
 
-    private fun loadInitialCompanies() {
+    fun loadCompanies() {
         viewModelScope.launch {
-            println("Loading initial companies...")
             repository.fetchCompanies()
         }
     }
@@ -76,10 +74,10 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
         _selectedTags.value = tags
         if (tags.isNotEmpty()) {
             viewModelScope.launch {
-                repository.searchCompanies(tags = tags.joinToString(","))
+                _companies.value = repository.searchCompanies(tags = tags.joinToString(","))
             }
         } else {
-            loadInitialCompanies()
+            loadCompanies()
         }
     }
 

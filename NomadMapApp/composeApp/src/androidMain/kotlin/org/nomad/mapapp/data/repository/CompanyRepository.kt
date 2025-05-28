@@ -17,21 +17,24 @@ class CompanyRepository(private val apiClient: ApiClient) {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    suspend fun fetchCompanies() {
+    suspend fun fetchCompanies() : List<Company> { //print in a lazy column for debugging
         try {
             _isLoading.value = true
             _error.value = null
             val result = apiClient.getCompanies()
             _companies.value = result
             println("Fetched ${result.size} companies")
+            return result
         } catch (e: Exception) {
             _error.value = "Error carregant empreses: ${e.message}"
             _companies.value = emptyList()
             println("Error fetching companies: ${e.message}")
+            return emptyList()
         } finally {
             _isLoading.value = false
         }
     }
+
 
     suspend fun fetchCompany(id: Int): Company? {
         return try {
@@ -64,17 +67,19 @@ class CompanyRepository(private val apiClient: ApiClient) {
         isRetail: Boolean? = null,
         minScore: Float? = null,
         tags: String? = null
-    ) {
+    ) : List<Company> {
         try {
             _isLoading.value = true
             _error.value = null
             val result = apiClient.searchCompanies(query, isProvider, isRetail, minScore, tags)
             _companies.value = result
             println("Search returned ${result.size} companies")
+            return result
         } catch (e: Exception) {
             _error.value = "Error cercant empreses: ${e.message}"
             _companies.value = emptyList()
             println("Error searching companies: ${e.message}")
+            return emptyList()
         } finally {
             _isLoading.value = false
         }
