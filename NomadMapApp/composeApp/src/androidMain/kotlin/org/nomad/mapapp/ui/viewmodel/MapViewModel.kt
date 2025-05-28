@@ -11,6 +11,10 @@ import org.nomad.mapapp.data.model.Company
 import org.nomad.mapapp.data.repository.CompanyRepository
 
 class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
+    // Store all companies (unfiltered)
+    private val _allCompanies = MutableStateFlow<List<Company>>(emptyList())
+
+    // Store displayed companies (filtered)
     private val _companies = MutableStateFlow<List<Company>>(emptyList())
     val companies: StateFlow<List<Company>> = _companies.asStateFlow()
 
@@ -30,11 +34,7 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
     val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
-        // Collect from repository StateFlows
-        viewModelScope.launch {
-            _companies.value = repository.fetchCompanies()
-        }
-
+        // Collect loading and error states from repository
         viewModelScope.launch {
             repository.isLoading.collect {
                 _isLoading.value = it
@@ -46,19 +46,40 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
                 _error.value = it
             }
         }
-
     }
 
     fun loadCompanies() {
         viewModelScope.launch {
-            repository.fetchCompanies()
+            try {
+                _error.value = null
+                val fetchedCompanies = repository.fetchCompanies()
+                _allCompanies.value = fetchedCompanies
+                // Apply current filters
+                applyFilters()
+                println("MapViewModel: Loaded ${fetchedCompanies.size} companies")
+            } catch (e: Exception) {
+                _error.value = "Error loading companies: ${e.message}"
+                println("MapViewModel: Error loading companies: ${e.message}")
+            }
         }
     }
 
     fun fetchCompaniesNearby(lat: Float, lng: Float, distance: Float = 5.0f) {
         viewModelScope.launch {
-            println("Fetching companies nearby: lat=$lat, lng=$lng, distance=$distance")
-            repository.fetchCompaniesNearby(lat, lng, distance)
+            try {
+                _error.value = null
+                println("Fetching companies nearby: lat=$lat, lng=$lng, distance=$distance")
+                repository.fetchCompaniesNearby(lat, lng, distance)
+                // Get the updated companies from repository
+                val nearbyCompanies = repository.companies.value
+                _allCompanies.value = nearbyCompanies
+                // Apply current filters
+                applyFilters()
+                println("MapViewModel: Loaded ${nearbyCompanies.size} nearby companies")
+            } catch (e: Exception) {
+                _error.value = "Error loading nearby companies: ${e.message}"
+                println("MapViewModel: Error loading nearby companies: ${e.message}")
+            }
         }
     }
 
@@ -68,12 +89,33 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
 
     fun updateSelectedTags(tags: Set<String>) {
         _selectedTags.value = tags
-        if (tags.isNotEmpty()) {
-            viewModelScope.launch {
-                _companies.value = repository.searchCompanies(tags = tags.joinToString(","))
-            }
+        applyFilters()
+        println("MapViewModel: Applied filters for tags: $tags")
+    }
+
+    private fun applyFilters() {
+        val tags = _selectedTags.value
+        val allCompanies = _allCompanies.value
+
+        val filteredCompanies = if (tags.isEmpty()) {
+            allCompanies
         } else {
-            loadCompanies()
+            allCompanies.filter { company ->
+                val companyTags = company.getTagsList()
+                println("Company ${company.name} has tags: $companyTags")
+                tags.any { selectedTag ->
+                    companyTags.any { companyTag ->
+                        companyTag.equals(selectedTag, ignoreCase = true)
+                    }
+                }
+            }
+        }
+
+        _companies.value = filteredCompanies
+        println("MapViewModel: Filtered companies count: ${filteredCompanies.size} from ${allCompanies.size} total")
+
+        if (filteredCompanies.isEmpty() && allCompanies.isNotEmpty()) {
+            println("MapViewModel: No companies match the selected filters")
         }
     }
 
@@ -82,15 +124,7 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
     }
 
     fun getFilteredCompanies(): List<Company> {
-        val tags = _selectedTags.value
-        val filtered = if (tags.isEmpty()) {
-            _companies.value
-        } else {
-            _companies.value.filter { company ->
-                company.getTagsList().any { it in tags }
-            }
-        }
-        return if (filtered.isEmpty()) _companies.value else filtered
+        return _companies.value
     }
 
     fun getCompaniesSortedByProximity(userLat: Float, userLng: Float): List<Company> {
