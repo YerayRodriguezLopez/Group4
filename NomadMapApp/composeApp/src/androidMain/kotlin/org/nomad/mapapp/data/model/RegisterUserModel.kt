@@ -7,5 +7,5 @@ data class RegisterUserModel(
     val email: String,
     val password: String,
     val userName: String,
-    val phoneNumber: String? = null
+    val phoneNumber: String
 )
