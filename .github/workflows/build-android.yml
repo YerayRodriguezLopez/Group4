@@ -1,0 +1,195 @@
+name: Build NomadMapApp APK and AAB
+
+env:
+  # The name of the main module repository (usually 'app' for Android projects)
+  main_project_module: app
+  # The name for artifact naming
+  app_name: NomadMapApp
+  # Project folder name
+  project_folder: NomadMapApp
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+  pull_request:
+    branches:
+      - main
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type to create'
+        required: false
+        default: 'both'
+        type: choice
+        options:
+          - 'debug'
+          - 'release'
+          - 'both'
+      skip_tests:
+        description: 'Skip tests for faster build'
+        required: false
+        default: false
+        type: boolean
+  # Scheduled build - runs every day at 6:30 AM UTC (adjust timezone as needed)
+  schedule:
+    - cron: '30 6 * * *'  # 6:30 AM UTC daily
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Set Current Date As Env Variable
+    - name: Set current date as env variable
+      run: echo "date_today=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+    # Set Repository Name As Env Variable
+    - name: Set repository name as env variable
+      run: echo "repository_name=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
+
+    # Set Up JDK
+    - name: Set Up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        cache: 'gradle'
+
+    # Change to project directory and make gradlew executable
+    - name: Change wrapper permissions
+      run: |
+        cd ${{ env.project_folder }}
+        chmod +x ./gradlew
+
+    # Cache Gradle dependencies
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          ${{ env.project_folder }}/.gradle/caches
+          ${{ env.project_folder }}/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    # Clean project
+    - name: Clean project
+      run: |
+        cd ${{ env.project_folder }}
+        ./gradlew clean
+
+    # Run lint checks
+    - name: Run lint
+      run: |
+        cd ${{ env.project_folder }}
+        ./gradlew lint
+
+    # Run unit tests
+    - name: Run unit tests
+      if: github.event.inputs.skip_tests != 'true'
+      run: |
+        cd ${{ env.project_folder }}
+        ./gradlew test
+
+    # Build project
+    - name: Build gradle project
+      run: |
+        cd ${{ env.project_folder }}
+        ./gradlew build
+
+    # Create APK Debug
+    - name: Build APK Debug
+      if: github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'both' || github.event.inputs.build_type == ''
+      run: |
+        cd ${{ env.project_folder }}
+        ./gradlew assembleDebug
+
+    # Create APK Release (unsigned)
+    - name: Build APK Release
+      if: github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' || github.event.inputs.build_type == ''
+      run: |
+        cd ${{ env.project_folder }}
+        ./gradlew assembleRelease
+
+    # Create Bundle AAB Release (unsigned)
+    - name: Build AAB Release
+      if: github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' || github.event.inputs.build_type == ''
+      run: |
+        cd ${{ env.project_folder }}
+        ./gradlew ${{ env.main_project_module }}:bundleRelease
+
+    # Upload APK Debug Artifact
+    - name: Upload APK Debug
+      if: github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'both' || github.event.inputs.build_type == ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.date_today }} - ${{ env.app_name }} - Debug APK
+        path: ${{ env.project_folder }}/${{ env.main_project_module }}/build/outputs/apk/debug/*.apk
+        retention-days: 30
+
+    # Upload APK Release Artifact
+    - name: Upload APK Release
+      if: github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' || github.event.inputs.build_type == ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.date_today }} - ${{ env.app_name }} - Release APK
+        path: ${{ env.project_folder }}/${{ env.main_project_module }}/build/outputs/apk/release/*.apk
+        retention-days: 30
+
+    # Upload AAB Release Artifact
+    - name: Upload AAB Release
+      if: github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' || github.event.inputs.build_type == ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.date_today }} - ${{ env.app_name }} - Release AAB
+        path: ${{ env.project_folder }}/${{ env.main_project_module }}/build/outputs/bundle/release/*.aab
+        retention-days: 30
+
+    # Upload test results
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ env.date_today }}
+        path: ${{ env.project_folder }}/${{ env.main_project_module }}/build/reports/tests/
+        retention-days: 7
+
+    # Upload lint results
+    - name: Upload lint results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: lint-results-${{ env.date_today }}
+        path: ${{ env.project_folder }}/${{ env.main_project_module }}/build/reports/lint-results*.html
+        retention-days: 7
+
+---
+
+# Optional: Cleanup workflow to remove old artifacts
+name: Cleanup Old Artifacts
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run every Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Remove old artifacts
+      uses: c-hive/gha-remove-artifacts@v1
+      with:
+        age: '7 days'
+        skip-recent: 5
