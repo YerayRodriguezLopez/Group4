@@ -29,13 +29,10 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.compose.*
-import com.google.maps.android.compose.clustering.Clustering
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import org.nomad.mapapp.R
-import org.nomad.mapapp.data.model.Company
 import org.nomad.mapapp.data.model.CompanyClusterItem
 import org.nomad.mapapp.ui.component.FilterDialog
 import org.nomad.mapapp.ui.component.MapBottomBar
@@ -174,57 +171,39 @@ fun MapScreen(
                 val filteredCompanies = viewModel.getFilteredCompanies()
                 val clusterItems = filteredCompanies.mapNotNull { company ->
                     company.address?.let {
-                        println("Creating cluster item for company: ${company.name} at ${it.lat}, ${it.lng}")
+                        println("Creating marker for company: ${company.name} at ${it.lat}, ${it.lng}")
                         CompanyClusterItem(company)
                     }
                 }
 
-                println("MapScreen: Rendering ${clusterItems.size} cluster items")
+                println("MapScreen: Rendering ${clusterItems.size} markers")
 
-                //TODO: throws error
-//                if (clusterItems.isNotEmpty()) {
-//                    Clustering(
-//                        items = clusterItems,
-//                        onClusterClick = { cluster ->
-//                            scope.launch {
-//                                val bounds = cluster.items.map { it.position }
-//                                val boundsBuilder = com.google.android.gms.maps.model.LatLngBounds.builder()
-//                                bounds.forEach { boundsBuilder.include(it) }
-//                                cameraPositionState.animate(
-//                                    CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100)
-//                                )
-//                            }
-//                            true
-//                        },
-//                        onClusterItemClick = { clusterItem ->
-//                            navController.navigate(Screen.CompanyDetails.createRoute(clusterItem.company.id.toString()))
-//                            true
-//                        },
-//                        clusterItemContent = { clusterItem ->
-//                            val company = clusterItem.company
-//                            val markerColors = if (isDaltonismMode) {
-//                                MapMarkerColors.daltonismColors
-//                            } else {
-//                                MapMarkerColors.defaultColors
-//                            }
-//
-//                            val markerColor = when {
-//                                company.isRetail && company.isProvider -> markerColors.both
-//                                company.isRetail -> markerColors.retail
-//                                company.isProvider -> markerColors.provider
-//                                else -> markerColors.default
-//                            }
-//
-//                            MarkerInfoWindow(
-//                                state = rememberMarkerState(position = clusterItem.position),
-//                                title = company.name,
-//                                snippet = clusterItem.snippet,
-//                                icon = BitmapDescriptorFactory.defaultMarker(markerColor)
-//                            )
-//                        }
-//                    )
-//                }
+                clusterItems.forEach { clusterItem ->
+                    val company = clusterItem.company
+                    val markerColors = if (isDaltonismMode) {
+                        MapMarkerColors.daltonismColors
+                    } else {
+                        MapMarkerColors.defaultColors
+                    }
 
+                    val markerColor = when {
+                        company.isRetail && company.isProvider -> markerColors.both
+                        company.isRetail -> markerColors.retail
+                        company.isProvider -> markerColors.provider
+                        else -> markerColors.default
+                    }
+
+                    MarkerInfoWindow(
+                        state = rememberMarkerState(position = clusterItem.position),
+                        title = company.name,
+                        snippet = clusterItem.snippet,
+                        icon = BitmapDescriptorFactory.defaultMarker(markerColor),
+                        onClick = {
+                            navController.navigate(Screen.CompanyDetails.createRoute(company.id.toString()))
+                            true
+                        }
+                    )
+                }
             }
 
             // Location button (top left)

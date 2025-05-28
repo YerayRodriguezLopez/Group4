@@ -33,10 +33,6 @@ class MapViewModel(private val repository: CompanyRepository) : ViewModel() {
         // Collect from repository StateFlows
         viewModelScope.launch {
             _companies.value = repository.fetchCompanies()
-//            repository.companies.collect {
-//                _companies.value = it
-//                println("MapViewModel received ${it.size} companies")
-//            }
         }
 
         viewModelScope.launch {
