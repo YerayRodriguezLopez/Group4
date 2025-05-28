@@ -28,6 +28,7 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
+@androidx.annotation.RequiresPermission(allOf = [android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION])
 fun AppNavigation(
     navController: NavHostController = rememberNavController(),
     mapViewModel: MapViewModel,
@@ -74,8 +75,7 @@ fun AppNavigation(
         composable(Screen.CompanyDetails.route) {
             CompanyDetailsScreen(
                 navController = navController,
-                viewModel = companyDetailsViewModel,
-                loginViewModel = loginViewModel
+                viewModel = companyDetailsViewModel
             )
         }
     }

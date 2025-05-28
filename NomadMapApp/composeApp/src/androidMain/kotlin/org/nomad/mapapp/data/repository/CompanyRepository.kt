@@ -35,16 +35,6 @@ class CompanyRepository(private val apiClient: ApiClient) {
         }
     }
 
-
-    suspend fun fetchCompany(id: Int): Company? {
-        return try {
-            apiClient.getCompany(id)
-        } catch (e: Exception) {
-            println("Error fetching company $id: ${e.message}")
-            null
-        }
-    }
-
     suspend fun fetchCompaniesNearby(lat: Float, lng: Float, distance: Float) {
         try {
             _isLoading.value = true
@@ -61,39 +51,7 @@ class CompanyRepository(private val apiClient: ApiClient) {
         }
     }
 
-    suspend fun searchCompanies(
-        query: String? = null,
-        isProvider: Boolean? = null,
-        isRetail: Boolean? = null,
-        minScore: Float? = null,
-        tags: String? = null
-    ) : List<Company> {
-        try {
-            _isLoading.value = true
-            _error.value = null
-            val result = apiClient.searchCompanies(query, isProvider, isRetail, minScore, tags)
-            _companies.value = result
-            println("Search returned ${result.size} companies")
-            return result
-        } catch (e: Exception) {
-            _error.value = "Error cercant empreses: ${e.message}"
-            _companies.value = emptyList()
-            println("Error searching companies: ${e.message}")
-            return emptyList()
-        } finally {
-            _isLoading.value = false
-        }
-    }
-
-    suspend fun rateCompany(companyId: Int, score: Float, userId: String): Boolean {
-        return apiClient.rateCompany(companyId, score, userId)
-    }
-
     suspend fun getUserRating(companyId: Int, userId: String): Rate? {
         return apiClient.getUserRating(companyId, userId)
-    }
-
-    suspend fun getCompanyRates(companyId: Int): List<Rate> {
-        return apiClient.getCompanyRates(companyId)
     }
 }

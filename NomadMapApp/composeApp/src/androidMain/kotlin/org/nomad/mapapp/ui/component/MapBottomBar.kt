@@ -1,10 +1,10 @@
 package org.nomad.mapapp.ui.component
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
@@ -24,7 +24,7 @@ fun MapBottomBar(
             icon = {
                 Icon(
                     imageVector = if (currentRoute == Screen.List.route)
-                        Icons.Filled.List else Icons.Outlined.List,
+                        Icons.AutoMirrored.Filled.List else Icons.AutoMirrored.Outlined.List,
                     contentDescription = null
                 )
             },

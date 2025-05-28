@@ -77,39 +77,6 @@ class ApiClient {
         }
     }
 
-    suspend fun getCompany(id: Int): Company? {
-        return try {
-            val response = client.get("$baseUrl/api/Companies/$id")
-            response.body<Company>()
-        } catch (e: Exception) {
-            println("Get company error: ${e.message}")
-            null
-        }
-    }
-
-    // Search companies using SearchController
-    suspend fun searchCompanies(
-        query: String? = null,
-        isProvider: Boolean? = null,
-        isRetail: Boolean? = null,
-        minScore: Float? = null,
-        tags: String? = null
-    ): List<Company> {
-        return try {
-            val response = client.get("$baseUrl/api/Search/companies") {
-                if (!query.isNullOrEmpty()) parameter("query", query)
-                if (isProvider != null) parameter("isProvider", isProvider)
-                if (isRetail != null) parameter("isRetail", isRetail)
-                if (minScore != null) parameter("minScore", minScore)
-                if (!tags.isNullOrEmpty()) parameter("tags", tags)
-            }
-            response.body<List<Company>>()
-        } catch (e: Exception) {
-            println("Search companies error: ${e.message}")
-            emptyList()
-        }
-    }
-
     // Get nearby companies using SearchController
     suspend fun getCompaniesNearby(lat: Float, lng: Float, distance: Float = 5.0f): List<Company> {
         return try {
@@ -126,29 +93,6 @@ class ApiClient {
     }
 
     // Ratings
-    suspend fun rateCompany(companyId: Int, score: Float, userId: String): Boolean {
-        return try {
-            val response = client.post("$baseUrl/api/Rates") {
-                contentType(ContentType.Application.Json)
-                setBody(Rate(userId = userId, companyId = companyId, score = score))
-            }
-            response.status.isSuccess()
-        } catch (e: Exception) {
-            println("Rate company error: ${e.message}")
-            false
-        }
-    }
-
-    suspend fun getCompanyRates(companyId: Int): List<Rate> {
-        return try {
-            val response = client.get("$baseUrl/api/Rates/company/$companyId")
-            response.body<List<Rate>>()
-        } catch (e: Exception) {
-            println("Get company rates error: ${e.message}")
-            emptyList()
-        }
-    }
-
     suspend fun getUserRates(userId: String): List<Rate> {
         return try {
             val response = client.get("$baseUrl/api/Rates/user/$userId")

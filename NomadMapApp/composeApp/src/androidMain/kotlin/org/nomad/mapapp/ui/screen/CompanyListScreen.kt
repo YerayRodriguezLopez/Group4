@@ -15,7 +15,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import org.nomad.mapapp.R
 import org.nomad.mapapp.data.model.Company
@@ -25,6 +24,7 @@ import org.nomad.mapapp.ui.navigation.Screen
 import org.nomad.mapapp.ui.viewmodel.MapViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
+@androidx.annotation.RequiresPermission(allOf = [android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION])
 @Composable
 fun CompanyListScreen(
     navController: NavController,
@@ -38,8 +38,6 @@ fun CompanyListScreen(
 
     var showFilterDialog by remember { mutableStateOf(false) }
     var sortedCompanies by remember { mutableStateOf<List<Company>>(emptyList()) }
-
-    val scope = rememberCoroutineScope()
 
     // Get user location and sort companies by proximity
     LaunchedEffect(companies) {

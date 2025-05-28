@@ -5,7 +5,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,28 +14,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.nomad.mapapp.R
 import org.nomad.mapapp.ui.viewmodel.CompanyDetailsViewModel
-import org.nomad.mapapp.ui.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompanyDetailsScreen(
     navController: NavController,
-    viewModel: CompanyDetailsViewModel,
-    loginViewModel: LoginViewModel
+    viewModel: CompanyDetailsViewModel
 ) {
     val company by viewModel.selectedCompany.collectAsState()
-    val ratingState by viewModel.ratingState.collectAsState()
-    val existingRating by viewModel.existingRating.collectAsState()
-    val isLoggedIn = loginViewModel.isLoggedIn()
-
-    var userRating by remember { mutableStateOf(0f) }
-
-    // Set user rating if they have already rated this company
-    LaunchedEffect(existingRating) {
-        existingRating?.let {
-            userRating = it.score
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -178,106 +163,6 @@ fun CompanyDetailsScreen(
                                     label = { Text(tag) }
                                 )
                             }
-                        }
-                    }
-                }
-
-                if (isLoggedIn) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = if (existingRating != null) {
-                                    stringResource(R.string.update_rating)
-                                } else {
-                                    stringResource(R.string.rate_company)
-                                },
-                                style = MaterialTheme.typography.titleLarge
-                            )
-
-                            if (existingRating != null) {
-                                Text(
-                                    text = stringResource(R.string.current_rating, existingRating!!.score),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            ) {
-                                for (i in 1..5) {
-                                    IconButton(
-                                        onClick = { userRating = i.toFloat() }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Star,
-                                            contentDescription = null,
-                                            tint = if (i <= userRating) {
-                                                MaterialTheme.colorScheme.primary
-                                            } else {
-                                                MaterialTheme.colorScheme.outline
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-
-                            when (ratingState) {
-                                is CompanyDetailsViewModel.RatingState.Loading -> {
-                                    CircularProgressIndicator()
-                                }
-                                is CompanyDetailsViewModel.RatingState.Success -> {
-                                    Text(
-                                        text = stringResource(R.string.rating_success),
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                                is CompanyDetailsViewModel.RatingState.Error -> {
-                                    Text(
-                                        text = (ratingState as CompanyDetailsViewModel.RatingState.Error).message,
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-                                }
-                                else -> {}
-                            }
-
-                            Button(
-                                onClick = { viewModel.rateCompany(userRating) },
-                                enabled = userRating > 0 && ratingState !is CompanyDetailsViewModel.RatingState.Loading
-                            ) {
-                                Text(
-                                    if (existingRating != null) {
-                                        stringResource(R.string.update_rating)
-                                    } else {
-                                        stringResource(R.string.submit_rating)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = stringResource(R.string.login_to_rate),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
                         }
                     }
                 }

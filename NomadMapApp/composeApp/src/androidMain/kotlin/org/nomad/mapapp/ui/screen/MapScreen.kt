@@ -39,7 +39,7 @@ import org.nomad.mapapp.ui.navigation.Screen
 import org.nomad.mapapp.ui.theme.MapMarkerColors
 import org.nomad.mapapp.ui.viewmodel.MapViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, MapsComposeExperimentalApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
     navController: NavController,
@@ -163,16 +163,17 @@ fun MapScreen(
                 uiSettings = mapUiSettings
             ) {
                 val filteredCompanies = viewModel.getFilteredCompanies()
-                val clusterItems = filteredCompanies.mapNotNull { company ->
+                val markerItems = filteredCompanies.mapNotNull { company ->
                     company.address?.let {
                         println("Creating marker for company: ${company.name} at ${it.lat}, ${it.lng}")
                         CompanyClusterItem(company)
                     }
                 }
 
-                println("MapScreen: Rendering ${clusterItems.size} markers")
+                // Debug: Log marker items
+                println("MapScreen: Rendering ${markerItems.size} markers")
 
-                clusterItems.forEach { clusterItem ->
+                markerItems.forEach { clusterItem ->
                     val company = clusterItem.company
                     val markerColors = if (isDaltonismMode) {
                         MapMarkerColors.daltonismColors

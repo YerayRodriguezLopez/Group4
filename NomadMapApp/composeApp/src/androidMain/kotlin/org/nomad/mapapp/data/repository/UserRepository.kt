@@ -42,7 +42,7 @@ class UserRepository(private val apiClient: ApiClient) {
             _isLoading.value = true
             _error.value = null
             val user = apiClient.register(email, password, phoneNumber)
-            // Don't set current user on registration - let them login afterwards
+
             val success = user != null
             if (!success) {
                 _error.value = "Error de registre"
