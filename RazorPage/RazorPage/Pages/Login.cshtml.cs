@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorPage.Models;
@@ -28,7 +29,7 @@ public class LoginModel : PageModel
     {
         var client = _clientFactory.CreateClient();
         string encryptedPassword = EncryptPassword(Password);
-        string url = $"http://group4apiapi.azure-api.net/api/User/{Email},{encryptedPassword}";
+        string url = $"http://localhost:7091/api/User/{Email},{encryptedPassword}";
 
         try
         {
@@ -56,11 +57,7 @@ public class LoginModel : PageModel
 
     private string EncryptPassword(string password)
     {
-        using (SHA256 sha256 = SHA256.Create())
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes(password);
-            byte[] hash = sha256.ComputeHash(bytes);
-            return Convert.ToHexString(hash);
-        }
+        var hasher = new PasswordHasher<User>();
+        return hasher.HashPassword(null, password);
     }
 }

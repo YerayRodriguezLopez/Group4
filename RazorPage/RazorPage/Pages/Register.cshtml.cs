@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorPage.Models;
@@ -26,6 +27,12 @@ public class RegisterModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
+        if (!ModelState.IsValid)
+        {
+            ErrorMessage = "Invalid form.";
+            return Page();
+        }
+
         var client = _clientFactory.CreateClient();
         string encryptedPassword = EncryptPassword(Password);
 
@@ -33,7 +40,7 @@ public class RegisterModel : PageModel
         {
             Email = Email,
             Password = encryptedPassword,
-            Rates = new List<Rate>()
+            Rates = new List<Rate>() // If your API expects this
         };
 
         var json = JsonSerializer.Serialize(newUser);
@@ -41,7 +48,7 @@ public class RegisterModel : PageModel
 
         try
         {
-            var response = await client.PostAsync("http://group4apiapi.azure-api.net/api/User", content);
+            var response = await client.PostAsync("http://localhost:7091/api/User", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -49,13 +56,14 @@ public class RegisterModel : PageModel
             }
             else
             {
-                ErrorMessage = "Registration failed. Email may already be in use.";
+                var responseText = await response.Content.ReadAsStringAsync();
+                ErrorMessage = $"Registration failed: {response.StatusCode} - {responseText}";
                 return Page();
             }
         }
-        catch
+        catch (Exception ex)
         {
-            ErrorMessage = "Could not connect to API.";
+            ErrorMessage = "API connection failed: " + ex.Message;
             return Page();
         }
     }
@@ -64,9 +72,8 @@ public class RegisterModel : PageModel
     {
         using (SHA256 sha256 = SHA256.Create())
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(password);
-            byte[] hash = sha256.ComputeHash(bytes);
-            return Convert.ToHexString(hash);
+            var hasher = new PasswordHasher<User>();
+            return hasher.HashPassword(null, password);
         }
     }
 }

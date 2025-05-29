@@ -91,7 +91,7 @@ namespace Group4API.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult<User>> RegisterUser(RegisterUserModel model)
+        public async Task<ActionResult<User>> RegisterUser([FromBody]RegisterUserModel model)
         {
             if (!ModelState.IsValid)
             {
